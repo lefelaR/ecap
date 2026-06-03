@@ -1,6 +1,36 @@
+'use client';
+
+import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
+import mapboxgl from 'mapbox-gl';
+import { useEffect, useRef } from 'react';
 
 export default function PublicPage() {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const mapInstance = useRef<mapboxgl.Map | null>(null);
+
+  useEffect(() => {
+    if (!mapContainer.current || mapInstance.current) return;
+
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+    const map = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [28.0473, -26.2041],
+      zoom: 11,
+    });
+
+    new mapboxgl.Marker({ draggable: true })
+      .setLngLat([28.0473, -26.2041])
+      .addTo(map);
+
+    mapInstance.current = map;
+
+    return () => {
+      map.remove();
+    };
+  }, []);
+
   return (
     <main className="container py-5">
       <div className="row g-4">
@@ -23,10 +53,7 @@ export default function PublicPage() {
                   </div>
                   <span className="badge bg-primary">Ward 23</span>
                 </div>
-                <div className="map-placeholder position-relative mb-3">
-                  <div className="map-pin" />
-                  <div className="map-pin-label">Drag pin to adjust</div>
-                </div>
+                <div className="mapbox-container mb-3" ref={mapContainer} />
                 <p className="text-muted small mb-0">
                   Use the map to select the report location, or enter the address manually in the form.
                 </p>
