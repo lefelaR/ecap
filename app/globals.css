@@ -16,6 +16,22 @@ body {
   background: #f8fafc;
 }
 
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.site-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.navbar-brand.d-flex img {
+  max-height: 40px;
+}
+
 a {
   color: #2563eb;
 }
