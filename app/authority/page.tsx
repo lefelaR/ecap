@@ -8,33 +8,32 @@ const mockReports = [
 
 export default function AuthorityPage() {
   return (
-    <main className="container">
-      <header className="header">
-        <p className="badge">Authority</p>
-        <h1>Authority Dashboard</h1>
-        <p>Pull reports by area, inspect anonymous crime incidents, and preserve records with cancellation and duplicate marking.</p>
-      </header>
-
-      <section className="card">
-        <h2>Assigned Ward Reports</h2>
-        <div className="grid">
-          {mockReports.map((report) => (
-            <article key={report.id} className="card">
-              <h3>{report.title}</h3>
-              <p>
-                <strong>{report.ward}</strong> · {report.status}
-              </p>
-              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
-                <button className="button secondary">View</button>
-                <button className="button secondary">Mark duplicate</button>
-              </div>
-            </article>
-          ))}
-        </div>
+    <main className="container py-5">
+      <section className="page-banner">
+        <span className="badge rounded-pill bg-primary">Authority</span>
+        <h1 className="display-6 fw-bold mt-3">Authority Dashboard</h1>
+        <p className="lead">Pull reports by area, inspect anonymous crime incidents, and preserve records with cancellation and duplicate marking.</p>
       </section>
 
-      <div style={{ marginTop: '1.5rem' }}>
-        <Link href="/" className="button secondary">
+      <section className="row g-4 mt-4">
+        {mockReports.map((report) => (
+          <div key={report.id} className="col-12 col-md-6 col-lg-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-body">
+                <h3 className="h5">{report.title}</h3>
+                <p className="text-muted mb-3">
+                  <strong>{report.ward}</strong> · {report.status}
+                </p>
+                <button className="btn btn-outline-primary btn-sm me-2">View</button>
+                <button className="btn btn-outline-secondary btn-sm">Mark duplicate</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="mt-4">
+        <Link href="/" className="btn btn-secondary">
           Back to home
         </Link>
       </div>

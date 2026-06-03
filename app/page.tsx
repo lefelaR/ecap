@@ -2,53 +2,67 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <main className="container">
-      <header className="header">
-        <p className="badge">ECAP</p>
-        <h1>Electronic Councillor Action Platform</h1>
-        <p>
+    <main className="container py-5">
+      <section className="page-banner text-center">
+        <span className="badge rounded-pill bg-info text-dark">ECAP</span>
+        <h1 className="display-5 fw-bold mt-3">Electronic Councillor Action Platform</h1>
+        <p className="lead mx-auto" style={{ maxWidth: '720px' }}>
           A national municipal reporting system for service delivery issues, anonymous crime reports,
           authority dashboards, and admin management.
         </p>
-      </header>
-
-      <section className="grid grid-3">
-        <article className="card">
-          <h2>Public Reporting</h2>
-          <p>Submit service delivery or crime reports, including anonymous incident reporting and location capture.</p>
-          <Link href="/public" className="button">
-            Report an Issue
-          </Link>
-        </article>
-
-        <article className="card">
-          <h2>Authority Dashboard</h2>
-          <p>View ward-level reports, filter by area and status, and mark incidents as duplicate or cancelled.</p>
-          <Link href="/authority" className="button secondary">
-            View Authority Tools
-          </Link>
-        </article>
-
-        <article className="card">
-          <h2>Admin Control</h2>
-          <p>Register authorities, assign area-limited rights, and preserve data integrity without deletion.</p>
-          <Link href="/admin" className="button secondary">
-            Open Admin Panel
-          </Link>
-        </article>
       </section>
 
-      <section className="card" style={{ marginTop: '1.5rem' }}>
-        <h2>Why ECAP?</h2>
-        <ul>
-          <li>Anonymous crime reporting for the public while preserving investigation access for SAPS/JMPD.</li>
-          <li>Service delivery reports routed to the correct ward and responsible entity.</li>
-          <li>Authority filtering, duplicate marking, and cancellation without data deletion.</li>
-          <li>Designed for every South African municipality, from urban centers to rural wards.</li>
-        </ul>
+      <div className="row row-cols-1 row-cols-md-3 g-4">
+        <div className="col">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <h2 className="card-title h5">Public Reporting</h2>
+              <p className="card-text">Submit service delivery or crime reports, including anonymous incident reporting and location capture.</p>
+              <Link href="/public" className="btn btn-primary">
+                Report an Issue
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="col">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <h2 className="card-title h5">Authority Dashboard</h2>
+              <p className="card-text">View ward-level reports, filter by area and status, and mark incidents as duplicate or cancelled.</p>
+              <Link href="/authority" className="btn btn-outline-primary">
+                View Authority Tools
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="col">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <h2 className="card-title h5">Admin Control</h2>
+              <p className="card-text">Register authorities, assign area-limited rights, and preserve data integrity without deletion.</p>
+              <Link href="/admin" className="btn btn-outline-primary">
+                Open Admin Panel
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section className="card shadow-sm mt-5">
+        <div className="card-body">
+          <h2>Why ECAP?</h2>
+          <ul>
+            <li>Anonymous crime reporting for the public while preserving investigation access for SAPS/JMPD.</li>
+            <li>Service delivery reports routed to the correct ward and responsible entity.</li>
+            <li>Authority filtering, duplicate marking, and cancellation without data deletion.</li>
+            <li>Designed for every South African municipality, from urban centers to rural wards.</li>
+          </ul>
+        </div>
       </section>
 
-      <footer className="footer">
+      <footer className="footer-custom text-center">
         Built to support transparent municipal reporting and executive hotspot monitoring across South Africa.
       </footer>
     </main>
