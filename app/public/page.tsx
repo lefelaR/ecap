@@ -3,75 +3,97 @@ import Link from 'next/link';
 export default function PublicPage() {
   return (
     <main className="container py-5">
-      <section className="page-banner">
-        <span className="badge rounded-pill bg-secondary text-white">Public User</span>
-        <h1 className="display-6 fw-bold mt-3">Report Service Delivery or Crime</h1>
-        <p className="lead">Submit a report anonymously or with your details. Choose manual location entry or current GPS location.</p>
-      </section>
-
-      <section className="card shadow-sm mt-4">
-        <div className="card-body">
-          <h2 className="h5 mb-4">Submit a New Report</h2>
-          <form className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label" htmlFor="type">Incident type</label>
-              <select id="type" className="form-select" defaultValue="service">
-                <option value="service">Service delivery issue</option>
-                <option value="crime">Crime incident</option>
-              </select>
-            </div>
-
-            <div className="col-md-6">
-              <label className="form-label" htmlFor="anonymous">Report type</label>
-              <select id="anonymous" className="form-select" defaultValue="false">
-                <option value="false">Public report</option>
-                <option value="true">Anonymous crime report</option>
-              </select>
-            </div>
-
-            <div className="col-12">
-              <label className="form-label" htmlFor="location">Location</label>
-              <input id="location" className="form-control" placeholder="Enter address or landmark" />
-            </div>
-
-            <div className="col-12">
-              <label className="form-label" htmlFor="description">Description</label>
-              <textarea id="description" className="form-control" rows={5} placeholder="Describe the incident in detail." />
-            </div>
-
-            <div className="col-12">
-              <button type="button" className="btn btn-primary">
-                Submit report
-              </button>
-            </div>
-          </form>
+      <div className="row g-4">
+        <div className="col-12">
+          <div className="page-banner">
+            <span className="badge rounded-pill bg-secondary text-white">Public User</span>
+            <h1 className="display-6 fw-bold mt-3">Report a problem</h1>
+            <p className="lead mb-0">Click the map or drag the pin to adjust the location.</p>
+          </div>
         </div>
-      </section>
 
-      <div className="row row-cols-1 row-cols-md-2 g-4 mt-4">
-        <article className="col">
-          <div className="card h-100 shadow-sm">
-            <div className="card-body">
-              <h3 className="h6">Anonymous Crime Reporting</h3>
-              <p className="card-text">Your identity is protected from public view and only visible to authorized investigators.</p>
+        <div className="col-12 col-xl-7">
+          <div className="card shadow-sm h-100">
+            <div className="card-body p-0">
+              <div className="map-panel p-4">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <p className="text-uppercase text-muted small mb-1">Location picker</p>
+                    <h2 className="h5 mb-0">City of Johannesburg Ward 23</h2>
+                  </div>
+                  <span className="badge bg-primary">Ward 23</span>
+                </div>
+                <div className="map-placeholder position-relative mb-3">
+                  <div className="map-pin" />
+                  <div className="map-pin-label">Drag pin to adjust</div>
+                </div>
+                <p className="text-muted small mb-0">
+                  Use the map to select the report location, or enter the address manually in the form.
+                </p>
+              </div>
             </div>
           </div>
-        </article>
+        </div>
 
-        <article className="col">
-          <div className="card h-100 shadow-sm">
+        <div className="col-12 col-xl-5">
+          <div className="card shadow-sm h-100">
             <div className="card-body">
-              <h3 className="h6">Coverage for All Municipalities</h3>
-              <p className="card-text">Designed for both urban and rural municipalities across South Africa.</p>
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h2 className="h5 mb-1">Report details</h2>
+                  <p className="text-muted small mb-0">The information below will be routed to the correct department.</p>
+                </div>
+                <span className="badge bg-info text-dark">Linked department</span>
+              </div>
+
+              <form className="row g-3">
+                <div className="col-12">
+                  <label className="form-label" htmlFor="category">Select a category</label>
+                  <select id="category" className="form-select" defaultValue="road-engineer">
+                    <option value="road-engineer">Road Engineer</option>
+                    <option value="water-services">Water Services</option>
+                    <option value="waste-management">Waste Management</option>
+                    <option value="safety-and-security">Safety and Security</option>
+                  </select>
+                </div>
+
+                <div className="col-12">
+                  <div className="alert alert-secondary py-3" role="alert">
+                    <strong>Public details</strong>
+                    <div className="small text-muted mt-2">
+                      These will be sent to the linked department and stored in accordance with our privacy policy.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label" htmlFor="summary">Summarise the problem</label>
+                  <input id="summary" className="form-control" placeholder="e.g. '10 inch pothole on Example St, near post box'" />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label" htmlFor="details">Explain what’s wrong</label>
+                  <textarea id="details" className="form-control" rows={5} placeholder="e.g. 'This pothole has been here for two months and...'" />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Photos</label>
+                  <div className="form-text mb-2">Upload photos (Max. 3)</div>
+                  <input type="file" className="form-control" accept="image/*" multiple />
+                </div>
+
+                <div className="col-12 d-flex gap-2">
+                  <button type="button" className="btn btn-primary flex-fill">
+                    Submit report
+                  </button>
+                  <Link href="/" className="btn btn-outline-secondary flex-fill">
+                    Back to home
+                  </Link>
+                </div>
+              </form>
             </div>
           </div>
-        </article>
-      </div>
-
-      <div className="mt-4">
-        <Link href="/" className="btn btn-outline-secondary">
-          Back to ECAP home
-        </Link>
+        </div>
       </div>
     </main>
   );
