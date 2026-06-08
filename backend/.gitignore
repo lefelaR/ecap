@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.serverless/
+.build/
+*.log
+.env
+.env.*
