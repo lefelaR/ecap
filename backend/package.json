@@ -1,0 +1,31 @@
+{
+  "name": "ecap-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ECAP serverless API — Node.js, TypeScript, DynamoDB",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "deploy": "serverless deploy",
+    "deploy:dev": "serverless deploy --stage dev",
+    "remove": "serverless remove",
+    "offline": "serverless offline start",
+    "seed": "tsx scripts/seed.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.758.0",
+    "@aws-sdk/lib-dynamodb": "^3.758.0",
+    "lambda-multipart-parser": "^1.0.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^20.14.2",
+    "@types/uuid": "^10.0.0",
+    "serverless": "^3.39.0",
+    "serverless-esbuild": "^1.54.3",
+    "serverless-offline": "^13.8.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.6.2"
+  }
+}
