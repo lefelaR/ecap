@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { HttpService, http } from '../../services/http';
 import type { AuthorityType } from '../../lib/types';
+import { HttpService, http } from '../../services/http';
+import { BackHomeLink } from '../atoms/BackHomeLink';
+import { DemoAccountButton } from '../molecules/DemoAccountButton';
 
 const DEMO_ACCOUNTS = [
   { id: 'auth-admin', label: 'Application Admin', description: 'Full system access' },
@@ -13,7 +14,7 @@ const DEMO_ACCOUNTS = [
   { id: 'auth-jmpd', label: 'JMPD Inspector', description: 'Safety and traffic incidents' },
 ];
 
-export function LoginForm() {
+export function LoginPanel() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') ?? '/authority';
@@ -46,29 +47,18 @@ export function LoginForm() {
 
       <div className="row g-3 mx-auto" style={{ maxWidth: 640 }}>
         {DEMO_ACCOUNTS.map((account) => (
-          <div key={account.id} className="col-12">
-            <button
-              type="button"
-              className="card shadow-sm w-100 text-start"
-              onClick={() => signIn(account.id)}
-              disabled={loading !== null}
-            >
-              <div className="card-body d-flex justify-content-between align-items-center">
-                <div>
-                  <h2 className="h6 mb-1">{account.label}</h2>
-                  <p className="text-muted small mb-0">{account.description}</p>
-                </div>
-                <span className="btn btn-sm btn-primary">{loading === account.id ? 'Signing in…' : 'Sign in'}</span>
-              </div>
-            </button>
-          </div>
+          <DemoAccountButton
+            key={account.id}
+            label={account.label}
+            description={account.description}
+            loading={loading === account.id}
+            onSignIn={() => signIn(account.id)}
+          />
         ))}
       </div>
 
       <div className="text-center mt-4">
-        <Link href="/" className="btn btn-outline-secondary">
-          Back to home
-        </Link>
+        <BackHomeLink />
       </div>
     </>
   );

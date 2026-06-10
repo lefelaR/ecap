@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { SessionUser } from '../lib/types';
-import { http } from '../services/http';
+import type { SessionUser } from '../../lib/types';
+import { http } from '../../services/http';
 
 export function NavBar() {
   const [session, setSession] = useState<SessionUser | null>(null);
