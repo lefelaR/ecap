@@ -1,0 +1,184 @@
+Resources:
+  ServiceReportsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Application
+          Value: ECAP
+        - Key: Stage
+          Value: ${self:provider.stage}
+        - Key: ManagedBy
+          Value: Serverless
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: referenceNumber
+          AttributeType: S
+        - AttributeName: ward
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ReferenceNumberIndex
+          KeySchema:
+            - AttributeName: referenceNumber
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: WardCreatedAtIndex
+          KeySchema:
+            - AttributeName: ward
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  AuthoritiesTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Application
+          Value: ECAP
+        - Key: Stage
+          Value: ${self:provider.stage}
+        - Key: ManagedBy
+          Value: Serverless
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  EmailNotificationsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Application
+          Value: ECAP
+        - Key: Stage
+          Value: ${self:provider.stage}
+        - Key: ManagedBy
+          Value: Serverless
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: reportReference
+          AttributeType: S
+        - AttributeName: sentAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ReportReferenceIndex
+          KeySchema:
+            - AttributeName: reportReference
+              KeyType: HASH
+            - AttributeName: sentAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  UserSessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      Tags:
+        - Key: Application
+          Value: ECAP
+        - Key: Stage
+          Value: ${self:provider.stage}
+        - Key: ManagedBy
+          Value: Serverless
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: authorityId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: AuthorityIdIndex
+          KeySchema:
+            - AttributeName: authorityId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ServiceReportsTableName:
+    Description: DynamoDB table for service and crime reports
+    Value: !Ref ServiceReportsTable
+    Export:
+      Name: ${self:service}-${self:provider.stage}-ServiceReportsTableName
+
+  ServiceReportsTableArn:
+    Description: ARN of the service reports table
+    Value: !GetAtt ServiceReportsTable.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-ServiceReportsTableArn
+
+  AuthoritiesTableName:
+    Description: DynamoDB table for authorities
+    Value: !Ref AuthoritiesTable
+    Export:
+      Name: ${self:service}-${self:provider.stage}-AuthoritiesTableName
+
+  AuthoritiesTableArn:
+    Description: ARN of the authorities table
+    Value: !GetAtt AuthoritiesTable.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-AuthoritiesTableArn
+
+  EmailNotificationsTableName:
+    Description: DynamoDB table for email notification log
+    Value: !Ref EmailNotificationsTable
+    Export:
+      Name: ${self:service}-${self:provider.stage}-EmailNotificationsTableName
+
+  EmailNotificationsTableArn:
+    Description: ARN of the email notifications table
+    Value: !GetAtt EmailNotificationsTable.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-EmailNotificationsTableArn
+
+  UserSessionsTableName:
+    Description: DynamoDB table for authenticated user sessions
+    Value: !Ref UserSessionsTable
+    Export:
+      Name: ${self:service}-${self:provider.stage}-UserSessionsTableName
+
+  UserSessionsTableArn:
+    Description: ARN of the user sessions table
+    Value: !GetAtt UserSessionsTable.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-UserSessionsTableArn

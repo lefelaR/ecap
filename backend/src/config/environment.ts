@@ -1,3 +1,5 @@
+import { getDeploymentRegion } from './serverlessConfig';
+
 export class Environment {
   static get serviceReportsTable(): string {
     return this.require('SERVICE_REPORTS_TABLE');
@@ -24,7 +26,7 @@ export class Environment {
   }
 
   static get awsRegion(): string {
-    return process.env.AWS_REGION ?? 'af-south-1';
+    return process.env.AWS_REGION ?? getDeploymentRegion();
   }
 
   private static require(key: string): string {
