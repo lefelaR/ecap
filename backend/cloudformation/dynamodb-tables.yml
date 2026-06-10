@@ -4,7 +4,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: ${self:custom.tables.serviceReports}
       BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Application
@@ -46,7 +45,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: ${self:custom.tables.authorities}
       BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Application
@@ -76,7 +74,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: ${self:custom.tables.emailNotifications}
       BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Application
@@ -110,7 +107,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: ${self:custom.tables.userSessions}
       BillingMode: PAY_PER_REQUEST
       TimeToLiveSpecification:
         AttributeName: expiresAt

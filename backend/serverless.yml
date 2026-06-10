@@ -7,11 +7,11 @@ plugins:
   - serverless-offline
 
 custom:
-  tables:
-    serviceReports: ${self:service}-${self:provider.stage}-service-reports
-    authorities: ${self:service}-${self:provider.stage}-authorities
-    emailNotifications: ${self:service}-${self:provider.stage}-email-notifications
-    userSessions: ${self:service}-${self:provider.stage}-user-sessions
+  deploymentRegion: eu-central-1
+  # API Gateway rejects allowCredentials with origin '*'. Add your production frontend URL here.
+  corsAllowedOrigins:
+    - http://localhost:3000
+    - http://127.0.0.1:3000
   esbuild:
     bundle: true
     minify: false
@@ -30,15 +30,15 @@ provider:
   name: aws
   runtime: nodejs20.x
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'af-south-1'}
+  region: ${opt:region, self:custom.deploymentRegion}
   memorySize: 256
   timeout: 29
   environment:
     STAGE: ${self:provider.stage}
-    SERVICE_REPORTS_TABLE: ${self:custom.tables.serviceReports}
-    AUTHORITIES_TABLE: ${self:custom.tables.authorities}
-    EMAIL_NOTIFICATIONS_TABLE: ${self:custom.tables.emailNotifications}
-    USER_SESSIONS_TABLE: ${self:custom.tables.userSessions}
+    SERVICE_REPORTS_TABLE: !Ref ServiceReportsTable
+    AUTHORITIES_TABLE: !Ref AuthoritiesTable
+    EMAIL_NOTIFICATIONS_TABLE: !Ref EmailNotificationsTable
+    USER_SESSIONS_TABLE: !Ref UserSessionsTable
     SESSION_COOKIE_NAME: ecap_session
     SESSION_TTL_HOURS: '8'
   iam:
@@ -63,8 +63,7 @@ provider:
             - !GetAtt UserSessionsTable.Arn
   httpApi:
     cors:
-      allowedOrigins:
-        - '*'
+      allowedOrigins: ${self:custom.corsAllowedOrigins}
       allowedHeaders:
         - Content-Type
         - Authorization

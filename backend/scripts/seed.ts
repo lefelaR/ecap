@@ -1,9 +1,18 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { getDeploymentRegion } from '../src/config/serverlessConfig';
 
-const region = process.env.AWS_REGION ?? 'af-south-1';
-const stage = process.env.STAGE ?? 'dev';
-const prefix = `ecap-api-${stage}`;
+const region = process.env.AWS_REGION ?? getDeploymentRegion();
+
+function requireTable(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `Missing ${name}. Run "serverless info --stage dev" after deploy and set table names in .env`,
+    );
+  }
+  return value;
+}
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
 
@@ -125,8 +134,8 @@ async function seedTable(tableName: string, items: Record<string, unknown>[]): P
 }
 
 async function main(): Promise<void> {
-  await seedTable(`${prefix}-authorities`, authorities);
-  await seedTable(`${prefix}-service-reports`, reports);
+  await seedTable(requireTable('AUTHORITIES_TABLE'), authorities);
+  await seedTable(requireTable('SERVICE_REPORTS_TABLE'), reports);
   console.log('Seed complete.');
 }
 

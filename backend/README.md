@@ -30,14 +30,14 @@ src/
 
 Table definitions live in `cloudformation/dynamodb-tables.yml`. They are deployed as part of the Serverless stack — one CloudFormation stack (`ecap-api-{stage}`) creates both the DynamoDB tables and the Lambda/API Gateway resources.
 
-| Table | Purpose |
-|-------|---------|
-| `ecap-api-{stage}-service-reports` | Public service delivery and crime reports |
-| `ecap-api-{stage}-authorities` | Councillors, SAPS, JMPD, admins |
-| `ecap-api-{stage}-email-notifications` | Confirmation and status-update email log |
-| `ecap-api-{stage}-user-sessions` | Authenticated authority sessions (TTL) |
+| Logical resource | Purpose |
+|------------------|---------|
+| ServiceReportsTable | Public service delivery and crime reports |
+| AuthoritiesTable | Councillors, SAPS, JMPD, admins |
+| EmailNotificationsTable | Confirmation and status-update email log |
+| UserSessionsTable | Authenticated authority sessions (TTL) |
 
-Tables use `DeletionPolicy: Retain` so data survives stack removal. Stack outputs export table names and ARNs (see CloudFormation console or `serverless info` after deploy).
+CloudFormation assigns each table a unique physical name per stack. Lambda functions receive the resolved names via environment variables (`!Ref`). Tables use `DeletionPolicy: Retain` so data survives stack removal. Stack outputs export table names and ARNs (see CloudFormation console or `serverless info` after deploy).
 
 ## Getting started
 
@@ -51,11 +51,11 @@ Tables use `DeletionPolicy: Retain` so data survives stack removal. Stack output
 
 ```bash
 cd backend
-pnpm install
+npm install
 cp .env.example .env   # optional — for seed/offline scripts
 ```
 
-> Use **pnpm** for this package (`package-lock.json` is ignored). Deprecation warnings about `aws-sdk@2`, old `glob`, `uuid@8/9`, etc. come from **Serverless Framework v3** dev tooling — not from your Lambda runtime, which uses AWS SDK v3.
+> Deprecation warnings about `aws-sdk@2`, old `glob`, `uuid@8/9`, etc. come from **Serverless Framework v3** dev tooling — not from your Lambda runtime, which uses AWS SDK v3.
 
 ### Type check
 
@@ -68,26 +68,27 @@ npm run build
 This runs `serverless deploy`, which creates/updates the CloudFormation stack including all four DynamoDB tables and Lambda functions:
 
 ```bash
-# default stage: dev, region: af-south-1
+# default stage: dev; region: custom.deploymentRegion in serverless.yml
 npm run deploy:dev
 
-# or explicitly
-npm run deploy -- --stage dev --region af-south-1
+# or explicitly override stage/region at deploy time
+npm run deploy -- --stage dev --region eu-central-1
 ```
 
-After deploy, confirm tables in AWS:
+After deploy:
 
 ```bash
-aws dynamodb list-tables --region af-south-1
-# expect: ecap-api-dev-service-reports, ecap-api-dev-authorities, …
-
 serverless info --stage dev
 ```
 
+Copy the table names from the stack outputs into `.env` before running the seed script.
+
 ### Seed demo data (after deploy)
 
+Copy table names from `serverless info --stage dev` into `.env`, then:
+
 ```bash
-STAGE=dev npm run seed
+npm run seed
 ```
 
 ### Remove stack
@@ -96,7 +97,15 @@ STAGE=dev npm run seed
 npm run remove -- --stage dev
 ```
 
-> Tables are retained on stack removal (`DeletionPolicy: Retain`). Delete them manually in the DynamoDB console if needed.
+> Tables are retained on stack removal (`DeletionPolicy: Retain`). Redeploying creates **new** tables with new names; delete old retained tables in the DynamoDB console when you no longer need them.
+
+### Troubleshooting deploy
+
+| Error | Cause | Fix |
+|-------|--------|-----|
+| `ResourceExistenceCheck` | Orphaned resources from an older template (fixed names like `ecap-api-dev-*`) | Delete leftover DynamoDB tables from failed/removed stacks in the AWS console, then redeploy |
+| `allow-credentials is not supported if 'allow-origin' is *` | CORS misconfiguration | Use explicit origins in `custom.corsAllowedOrigins` (not `*`) with `allowCredentials: true` |
+| `AWS_REGION` reserved key | Setting `AWS_REGION` in Lambda env | Remove it — Lambda sets `AWS_REGION` automatically |
 
 ### Local development
 
@@ -128,10 +137,10 @@ Mirrors the Next.js frontend API:
 
 ## Connect the Next.js frontend
 
-Set the API base URL in the frontend `.env`:
+Set the API base URL in the frontend `.env` (region must match `custom.deploymentRegion` in `serverless.yml`):
 
 ```env
-NEXT_PUBLIC_API_URL=https://your-api-id.execute-api.af-south-1.amazonaws.com
+NEXT_PUBLIC_API_URL=https://your-api-id.execute-api.eu-central-1.amazonaws.com
 ```
 
 Then proxy or update frontend `fetch` calls from `/api/*` to `${NEXT_PUBLIC_API_URL}/*`.

@@ -2,7 +2,6 @@ node_modules/
 dist/
 .serverless/
 .build/
-package-lock.json
 *.log
 .env
 .env.*
