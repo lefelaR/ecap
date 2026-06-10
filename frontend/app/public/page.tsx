@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
 import mapboxgl from 'mapbox-gl';
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { apiFetch } from '../../lib/api';
 
 export default function PublicPage() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
