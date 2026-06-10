@@ -4,19 +4,17 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CATEGORY_LABELS } from '../../lib/labels';
 import type { PublicStats } from '../../lib/types';
+import { HttpService, http } from '../../services/http';
 
 export default function StatisticsPage() {
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/api/stats')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setStats(data);
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load statistics.'));
+    http
+      .get<PublicStats>('/stats')
+      .then(({ data }) => setStats(data))
+      .catch((err) => setError(HttpService.getErrorMessage(err, 'Failed to load statistics.')));
   }, []);
 
   return (

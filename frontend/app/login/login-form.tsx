@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { HttpService, http } from '../../services/http';
+import type { AuthorityType } from '../../lib/types';
 
 const DEMO_ACCOUNTS = [
   { id: 'auth-admin', label: 'Application Admin', description: 'Full system access' },
@@ -23,19 +25,12 @@ export function LoginForm() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorityId }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Login failed.');
-
+      const { data } = await http.post<{ type: AuthorityType }>('/auth/login', { authorityId });
       const destination =
         data.type === 'Application Admin' && redirect === '/authority' ? '/admin' : redirect;
       router.push(destination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed.');
+      setError(HttpService.getErrorMessage(err, 'Login failed.'));
     } finally {
       setLoading(null);
     }

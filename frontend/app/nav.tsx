@@ -3,19 +3,20 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { SessionUser } from '../lib/types';
+import { http } from '../services/http';
 
 export function NavBar() {
   const [session, setSession] = useState<SessionUser | null>(null);
 
   useEffect(() => {
-    fetch('/api/auth/session')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setSession(data?.user ?? null))
+    http
+      .get<{ user: SessionUser }>('/auth/session')
+      .then(({ data }) => setSession(data.user ?? null))
       .catch(() => setSession(null));
   }, []);
 
   async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await http.post('/auth/logout');
     setSession(null);
     window.location.href = '/';
   }

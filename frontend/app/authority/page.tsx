@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CATEGORY_LABELS, STATUS_LABELS } from '../../lib/labels';
 import type { Report, ReportStatus, SessionUser } from '../../lib/types';
+import { HttpService, http } from '../../services/http';
 
 export default function AuthorityPage() {
   const router = useRouter();
@@ -19,9 +20,9 @@ export default function AuthorityPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/auth/session')
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => setSession(data.user))
+    http
+      .get<{ user: SessionUser }>('/auth/session')
+      .then(({ data }) => setSession(data.user))
       .catch(() => router.push('/login?redirect=/authority'))
       .finally(() => setLoading(false));
   }, [router]);
@@ -33,34 +34,27 @@ export default function AuthorityPage() {
     if (wardFilter) params.set('ward', wardFilter);
     if (statusFilter) params.set('status', statusFilter);
 
-    fetch(`/api/reports?${params}`)
-      .then((res) => res.json())
-      .then(setReports)
+    http
+      .get<Report[]>(`/reports?${params}`)
+      .then(({ data }) => setReports(data))
       .catch(() => setMessage('Failed to load reports.'));
   }, [session, wardFilter, statusFilter]);
 
   async function updateStatus(status: ReportStatus) {
     if (!selected) return;
 
-    const response = await fetch(`/api/reports/${selected.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const { data: updated } = await http.patch<Report>(`/reports/${selected.id}`, {
         status,
         notes: notes || undefined,
         expenditure: expenditure ? Number(expenditure) : undefined,
-      }),
-    });
-
-    const updated = await response.json();
-    if (!response.ok) {
-      setMessage(updated.error ?? 'Update failed.');
-      return;
+      });
+      setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setSelected(updated);
+      setMessage(`Report marked as ${status}. Citizen notified by email if applicable.`);
+    } catch (err) {
+      setMessage(HttpService.getErrorMessage(err, 'Update failed.'));
     }
-
-    setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-    setSelected(updated);
-    setMessage(`Report marked as ${status}. Citizen notified by email if applicable.`);
   }
 
   if (loading) {

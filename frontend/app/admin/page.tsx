@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import type { Authority, AuthorityType, SessionUser } from '../../lib/types';
+import { HttpService, http } from '../../services/http';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -13,15 +14,15 @@ export default function AdminPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/auth/session')
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => {
+    http
+      .get<{ user: SessionUser }>('/auth/session')
+      .then(({ data }) => {
         if (data.user.type !== 'Application Admin') {
           router.push('/login?redirect=/admin');
           return;
         }
         setSession(data.user);
-        return fetch('/api/authorities').then((res) => res.json());
+        return http.get<Authority[]>('/authorities').then(({ data: authorities }) => authorities);
       })
       .then((data) => {
         if (Array.isArray(data)) setAuthorities(data);
@@ -34,27 +35,20 @@ export default function AdminPage() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
 
-    const response = await fetch('/api/authorities', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const { data } = await http.post<Authority>('/authorities', {
         name: form.get('name'),
         email: form.get('email'),
         type: form.get('type'),
         ward: form.get('ward'),
         municipality: form.get('municipality'),
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      setMessage(data.error ?? 'Registration failed.');
-      return;
+      });
+      setAuthorities((prev) => [data, ...prev]);
+      setMessage(`Registered ${data.name} as ${data.type}.`);
+      event.currentTarget.reset();
+    } catch (err) {
+      setMessage(HttpService.getErrorMessage(err, 'Registration failed.'));
     }
-
-    setAuthorities((prev) => [data, ...prev]);
-    setMessage(`Registered ${data.name} as ${data.type}.`);
-    event.currentTarget.reset();
   }
 
   if (loading) {

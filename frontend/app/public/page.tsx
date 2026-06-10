@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
 import mapboxgl from 'mapbox-gl';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { apiFetch } from '../../lib/api';
+import { HttpService, http } from '../../services/http';
 
 export default function PublicPage() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -83,13 +83,11 @@ export default function PublicPage() {
     formData.set('location', `Ward 23, City of Johannesburg`);
 
     try {
-      const response = await fetch('/api/reports', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Failed to submit report.');
+      const { data } = await http.post<{ referenceNumber: string }>('/reports', formData);
       setResult({ referenceNumber: data.referenceNumber });
       form.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit report.');
+      setError(HttpService.getErrorMessage(err, 'Failed to submit report.'));
     } finally {
       setSubmitting(false);
     }

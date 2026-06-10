@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { CATEGORY_LABELS } from '../../lib/labels';
+import { HttpService, http } from '../../services/http';
 
 interface LookupResult {
   referenceNumber: string;
@@ -37,12 +38,10 @@ export function StatusForm() {
     if (userEmail) params.set('email', userEmail);
 
     try {
-      const response = await fetch(`/api/reports/lookup?${params}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? 'Lookup failed.');
+      const { data } = await http.get<LookupResult>(`/reports/lookup?${params}`);
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lookup failed.');
+      setError(HttpService.getErrorMessage(err, 'Lookup failed.'));
     } finally {
       setLoading(false);
     }
