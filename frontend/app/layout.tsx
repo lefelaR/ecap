@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './globals.css';
-import { NavBar } from './nav';
+import { NavBar } from '../components/organisms/NavBar';
 
 export const metadata: Metadata = {
   title: 'ECAP - Electronic Councillor Action Platform',

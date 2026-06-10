@@ -86,3 +86,18 @@ export type CreateReportInput = Omit<
   Report,
   'id' | 'referenceNumber' | 'status' | 'createdAt' | 'updatedAt' | 'resolvedAt' | 'expenditure' | 'notes'
 >;
+
+export interface ReportLookupResult {
+  referenceNumber: string;
+  status: string;
+  summary: string;
+  description: string;
+  ward: string;
+  category: ReportCategory;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+  expenditure?: number;
+  notes?: string;
+  anonymous: boolean;
+}

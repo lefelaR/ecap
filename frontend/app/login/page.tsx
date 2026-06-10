@@ -1,20 +1,19 @@
 import { Suspense } from 'react';
-import { LoginForm } from './login-form';
+import { LoginPanel } from '../../components/organisms/LoginPanel';
+import { PageTemplate } from '../../components/templates/PageTemplate';
 
 export default function LoginPage() {
   return (
-    <main className="container py-5">
-      <section className="page-banner text-center">
-        <span className="badge rounded-pill bg-primary">Authority login</span>
-        <h1 className="display-6 fw-bold mt-3">Sign in to ECAP</h1>
-        <p className="lead mx-auto" style={{ maxWidth: 560 }}>
-          Select a demo authority account. In production this would use secure municipal credentials.
-        </p>
-      </section>
-
+    <PageTemplate
+      badge="Authority login"
+      badgeClass="bg-primary"
+      title="Sign in to ECAP"
+      lead="Select a demo authority account. In production this would use secure municipal credentials."
+      centered
+    >
       <Suspense fallback={<p className="text-center">Loading…</p>}>
-        <LoginForm />
+        <LoginPanel />
       </Suspense>
-    </main>
+    </PageTemplate>
   );
 }
