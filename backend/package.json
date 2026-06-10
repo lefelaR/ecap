@@ -7,6 +7,8 @@
     "build": "tsc --noEmit",
     "deploy": "serverless deploy",
     "deploy:dev": "serverless deploy --stage dev",
+    "info": "serverless info --stage dev",
+    "print": "serverless print --stage dev",
     "remove": "serverless remove",
     "offline": "serverless offline start",
     "seed": "tsx scripts/seed.ts",

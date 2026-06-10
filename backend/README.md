@@ -26,14 +26,96 @@ src/
 | **Services** | Orchestrate repositories and cross-cutting concerns |
 | **Handlers** | Parse HTTP events, delegate to services, return responses |
 
-## DynamoDB tables (named by function)
+## DynamoDB tables (CloudFormation)
 
-| Table | Purpose |
-|-------|---------|
-| `ecap-api-{stage}-service-reports` | Public service delivery and crime reports |
-| `ecap-api-{stage}-authorities` | Councillors, SAPS, JMPD, admins |
-| `ecap-api-{stage}-email-notifications` | Confirmation and status-update email log |
-| `ecap-api-{stage}-user-sessions` | Authenticated authority sessions (TTL) |
+Table definitions live in `cloudformation/dynamodb-tables.yml`. They are deployed as part of the Serverless stack — one CloudFormation stack (`ecap-api-{stage}`) creates both the DynamoDB tables and the Lambda/API Gateway resources.
+
+| Logical resource | Purpose |
+|------------------|---------|
+| ServiceReportsTable | Public service delivery and crime reports |
+| AuthoritiesTable | Councillors, SAPS, JMPD, admins |
+| EmailNotificationsTable | Confirmation and status-update email log |
+| UserSessionsTable | Authenticated authority sessions (TTL) |
+
+CloudFormation assigns each table a unique physical name per stack. Lambda functions receive the resolved names via environment variables (`!Ref`). Tables use `DeletionPolicy: Retain` so data survives stack removal. Stack outputs export table names and ARNs (see CloudFormation console or `serverless info` after deploy).
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- AWS credentials configured (`aws configure` or env vars / IAM role)
+- Serverless Framework CLI (`npm install -g serverless` optional — use `npx`)
+
+### Install
+
+```bash
+cd backend
+npm install
+cp .env.example .env   # optional — for seed/offline scripts
+```
+
+> Deprecation warnings about `aws-sdk@2`, old `glob`, `uuid@8/9`, etc. come from **Serverless Framework v3** dev tooling — not from your Lambda runtime, which uses AWS SDK v3.
+
+### Type check
+
+```bash
+npm run build
+```
+
+### Deploy tables and API (CloudFormation + Serverless)
+
+This runs `serverless deploy`, which creates/updates the CloudFormation stack including all four DynamoDB tables and Lambda functions:
+
+```bash
+# default stage: dev; region: custom.deploymentRegion in serverless.yml
+npm run deploy:dev
+
+# or explicitly override stage/region at deploy time
+npm run deploy -- --stage dev --region eu-central-1
+```
+
+After deploy:
+
+```bash
+serverless info --stage dev
+```
+
+Copy the table names from the stack outputs into `.env` before running the seed script.
+
+### Seed demo data (after deploy)
+
+Copy table names from `serverless info --stage dev` into `.env`, then:
+
+```bash
+npm run seed
+```
+
+### Remove stack
+
+```bash
+npm run remove -- --stage dev
+```
+
+> Tables are retained on stack removal (`DeletionPolicy: Retain`). Redeploying creates **new** tables with new names; delete old retained tables in the DynamoDB console when you no longer need them.
+
+### Troubleshooting deploy
+
+| Error | Cause | Fix |
+|-------|--------|-----|
+| `ResourceExistenceCheck` | Orphaned resources from an older template (fixed names like `ecap-api-dev-*`) | Delete leftover DynamoDB tables from failed/removed stacks in the AWS console, then redeploy |
+| `allow-credentials is not supported if 'allow-origin' is *` | CORS misconfiguration | Use explicit origins in `custom.corsAllowedOrigins` (not `*`) with `allowCredentials: true` |
+| `AWS_REGION` reserved key | Setting `AWS_REGION` in Lambda env | Remove it — Lambda sets `AWS_REGION` automatically |
+
+### Local development
+
+```bash
+npm run offline
+```
+
+API runs at `http://localhost:4000`.
+
+> For local DynamoDB, point tables to [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) or deploy to a dev stage first.
 
 ## API endpoints
 
@@ -53,55 +135,12 @@ Mirrors the Next.js frontend API:
 | GET | `/auth/session` | Current session user |
 | GET | `/stats` | Public statistics |
 
-## Getting started
-
-### Prerequisites
-
-- Node.js 20+
-- AWS credentials configured (`aws configure`)
-- Serverless Framework CLI (`npm install -g serverless` optional — use `npx`)
-
-### Install
-
-```bash
-cd backend
-npm install
-```
-
-### Type check
-
-```bash
-npm run build
-```
-
-### Deploy to AWS
-
-```bash
-npm run deploy:dev
-```
-
-### Seed demo data (after deploy)
-
-```bash
-STAGE=dev npm run seed
-```
-
-### Local development
-
-```bash
-npm run offline
-```
-
-API runs at `http://localhost:4000`.
-
-> For local DynamoDB, point tables to [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) or deploy to a dev stage first.
-
 ## Connect the Next.js frontend
 
-Set the API base URL in the frontend `.env`:
+Set the API base URL in the frontend `.env` (region must match `custom.deploymentRegion` in `serverless.yml`):
 
 ```env
-NEXT_PUBLIC_API_URL=https://your-api-id.execute-api.af-south-1.amazonaws.com
+NEXT_PUBLIC_API_URL=https://your-api-id.execute-api.eu-central-1.amazonaws.com
 ```
 
 Then proxy or update frontend `fetch` calls from `/api/*` to `${NEXT_PUBLIC_API_URL}/*`.
