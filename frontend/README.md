@@ -63,3 +63,16 @@ Use **Login** and pick a demo authority:
 - Persistence uses a local JSON file (`data/ecap.json`) suitable for demo/prototype use. Production would use a cloud database.
 - Email is simulated (logged to console and stored in `data/ecap.json`). Wire `services/email.ts` to SMTP or a provider for production.
 - Photo uploads capture filenames in the report record; production should store files in cloud object storage.
+
+###ENDPOINTS
+GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/reports
+-  POST - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/reports
+-  GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/reports/{id}
+-  PATCH - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/reports/{id}
+-  GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/reports/lookup
+-  GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/authorities
+-  POST - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/authorities
+-  POST - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/auth/login
+-  POST - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/auth/logout
+-  GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/auth/session
+-  GET - https://r81ogumnnl.execute-api.eu-central-1.amazonaws.com/stats
