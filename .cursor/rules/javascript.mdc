@@ -1,0 +1,45 @@
+---
+description: JavaScript and TypeScript standards — ES14, KISS, OOP
+globs: **/*.{js,jsx,ts,tsx}
+alwaysApply: false
+---
+
+# JavaScript & TypeScript
+
+Apply these rules to every JS/TS change in this project.
+
+## Use ES14 (ES2024)
+
+- ES modules (`import`/`export`), `const`/`let`, `async`/`await`
+- Optional chaining (`?.`), nullish coalescing (`??`), `Object.hasOwn()`
+- Prefer `Object.groupBy()`, `Promise.withResolvers()`, non-mutating `Array.toSorted()` / `with()`
+- Private class fields (`#field`), `structuredClone()`, `import type` for types
+- No `var`, `require`, `any`, or legacy callback patterns
+
+## KISS
+
+- Simplest correct solution; one purpose per function, method, or class
+- No abstractions until a pattern repeats; no speculative error handling
+- Match surrounding conventions; minimal diffs; comments only for non-obvious logic
+
+## Favor OOP
+
+- **Entities** — classes with factory methods and domain behavior (`canBeViewedBy`, `toJSON`)
+- **Services** — constructor-injected dependencies; orchestrate use cases
+- **Repositories** — encapsulate data access
+- **Handlers** — thin; delegate to services (no inline business logic)
+- **React UI** — functional components; extract stateful logic into classes/modules when warranted
+
+```typescript
+// ✅ Service class with injection
+export class ReportService {
+  constructor(private readonly repo: ServiceReportRepository) {}
+  async createReport(input: CreateReportInput) { /* ... */ }
+}
+
+// ❌ Procedural handler with embedded rules
+export const handler = async (e) => {
+  const data = JSON.parse(e.body);
+  return { statusCode: 200, body: JSON.stringify(data.filter(/* rules */)) };
+};
+```
