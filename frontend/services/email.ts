@@ -1,5 +1,5 @@
+import type { Report } from '../lib/types';
 import { readData, writeData } from './store';
-import type { Report } from './types';
 
 export async function sendReportConfirmation(report: Report): Promise<void> {
   if (!report.contactEmail || report.anonymous) return;

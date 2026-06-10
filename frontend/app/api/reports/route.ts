@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { canAccessReport, getSession } from '../../../lib/auth';
-import { sendReportConfirmation } from '../../../lib/email';
-import { nextReferenceNumber, readData, writeData } from '../../../lib/store';
+import { canAccessReport, getSession } from '../../../services/auth';
+import { sendReportConfirmation } from '../../../services/email';
+import { nextReferenceNumber, readData, writeData } from '../../../services/store';
 import type { CreateReportInput, Report } from '../../../lib/types';
 
 export async function GET(request: Request) {

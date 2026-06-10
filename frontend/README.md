@@ -54,11 +54,12 @@ Use **Login** and pick a demo authority:
 - `app/authority/` — authority issue management
 - `app/admin/` — authority registration
 - `app/api/` — REST API (reports, auth, stats, authorities)
-- `lib/` — types, file store, auth, email, statistics
+- `lib/` — shared types and labels
+- `services/` — auth, store, email, and statistics services
 - `data/` — runtime JSON persistence (created on first run)
 
 ## Notes
 
 - Persistence uses a local JSON file (`data/ecap.json`) suitable for demo/prototype use. Production would use a cloud database.
-- Email is simulated (logged to console and stored in `data/ecap.json`). Wire `lib/email.ts` to SMTP or a provider for production.
+- Email is simulated (logged to console and stored in `data/ecap.json`). Wire `services/email.ts` to SMTP or a provider for production.
 - Photo uploads capture filenames in the report record; production should store files in cloud object storage.
