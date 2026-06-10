@@ -1,0 +1,260 @@
+service: ecap-api
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  tables:
+    serviceReports: ${self:service}-${self:provider.stage}-service-reports
+    authorities: ${self:service}-${self:provider.stage}-authorities
+    emailNotifications: ${self:service}-${self:provider.stage}-email-notifications
+    userSessions: ${self:service}-${self:provider.stage}-user-sessions
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node20
+    platform: node
+    concurrency: 10
+    exclude:
+      - '@aws-sdk/client-dynamodb'
+      - '@aws-sdk/lib-dynamodb'
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'af-south-1'}
+  memorySize: 256
+  timeout: 29
+  environment:
+    STAGE: ${self:provider.stage}
+    SERVICE_REPORTS_TABLE: ${self:custom.tables.serviceReports}
+    AUTHORITIES_TABLE: ${self:custom.tables.authorities}
+    EMAIL_NOTIFICATIONS_TABLE: ${self:custom.tables.emailNotifications}
+    USER_SESSIONS_TABLE: ${self:custom.tables.userSessions}
+    SESSION_COOKIE_NAME: ecap_session
+    SESSION_TTL_HOURS: '8'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:BatchWriteItem
+          Resource:
+            - !GetAtt ServiceReportsTable.Arn
+            - !Sub '${ServiceReportsTable.Arn}/index/*'
+            - !GetAtt AuthoritiesTable.Arn
+            - !Sub '${AuthoritiesTable.Arn}/index/*'
+            - !GetAtt EmailNotificationsTable.Arn
+            - !Sub '${EmailNotificationsTable.Arn}/index/*'
+            - !GetAtt UserSessionsTable.Arn
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - Cookie
+      allowedMethods:
+        - GET
+        - POST
+        - PATCH
+        - OPTIONS
+      allowCredentials: true
+
+functions:
+  listReports:
+    handler: src/handlers/reports/listReports.handler
+    events:
+      - httpApi:
+          path: /reports
+          method: get
+
+  createReport:
+    handler: src/handlers/reports/createReport.handler
+    events:
+      - httpApi:
+          path: /reports
+          method: post
+
+  getReport:
+    handler: src/handlers/reports/getReport.handler
+    events:
+      - httpApi:
+          path: /reports/{id}
+          method: get
+
+  updateReport:
+    handler: src/handlers/reports/updateReport.handler
+    events:
+      - httpApi:
+          path: /reports/{id}
+          method: patch
+
+  lookupReport:
+    handler: src/handlers/reports/lookupReport.handler
+    events:
+      - httpApi:
+          path: /reports/lookup
+          method: get
+
+  listAuthorities:
+    handler: src/handlers/authorities/listAuthorities.handler
+    events:
+      - httpApi:
+          path: /authorities
+          method: get
+
+  createAuthority:
+    handler: src/handlers/authorities/createAuthority.handler
+    events:
+      - httpApi:
+          path: /authorities
+          method: post
+
+  login:
+    handler: src/handlers/auth/login.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+
+  logout:
+    handler: src/handlers/auth/logout.handler
+    events:
+      - httpApi:
+          path: /auth/logout
+          method: post
+
+  session:
+    handler: src/handlers/auth/session.handler
+    events:
+      - httpApi:
+          path: /auth/session
+          method: get
+
+  getStats:
+    handler: src/handlers/stats/getStats.handler
+    events:
+      - httpApi:
+          path: /stats
+          method: get
+
+resources:
+  Resources:
+    ServiceReportsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tables.serviceReports}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: referenceNumber
+            AttributeType: S
+          - AttributeName: ward
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: ReferenceNumberIndex
+            KeySchema:
+              - AttributeName: referenceNumber
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: WardCreatedAtIndex
+            KeySchema:
+              - AttributeName: ward
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    AuthoritiesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tables.authorities}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    EmailNotificationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tables.emailNotifications}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: reportReference
+            AttributeType: S
+          - AttributeName: sentAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: ReportReferenceIndex
+            KeySchema:
+              - AttributeName: reportReference
+                KeyType: HASH
+              - AttributeName: sentAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    UserSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tables.userSessions}
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: expiresAt
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: sessionId
+            AttributeType: S
+          - AttributeName: authorityId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sessionId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: AuthorityIdIndex
+            KeySchema:
+              - AttributeName: authorityId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
