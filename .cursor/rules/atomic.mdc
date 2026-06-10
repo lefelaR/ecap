@@ -1,0 +1,101 @@
+---
+description: Atomic Design — where to place new UI, routes, and backend code
+alwaysApply: true
+---
+
+# Atomic Design
+
+Build every new feature bottom-up: small reusable pieces compose into larger ones. Never jump straight to a full page or monolithic file.
+
+## The five levels
+
+| Level | What it is | Rule |
+|-------|-----------|------|
+| **Atoms** | Smallest unit; no feature context | Single responsibility; no API calls |
+| **Molecules** | 2–5 atoms combined | One interaction or data display |
+| **Organisms** | Self-contained UI or logic section | Composes molecules; may fetch data |
+| **Templates** | Page layout and slot structure | No real data; defines regions |
+| **Pages** | Template + real data and routing | Thin; delegates to organisms |
+
+## Frontend (`frontend/`)
+
+```
+frontend/
+├── components/
+│   ├── atoms/        # Button, Badge, FormField, Spinner
+│   ├── molecules/    # PageBanner, ReportCard, StatTile
+│   ├── organisms/    # ReportForm, StatusPanel, AuthorityDashboard
+│   └── templates/    # PublicReportTemplate, AdminTemplate
+├── app/              # Pages (Next.js routes only)
+├── lib/              # Atoms: types, labels, constants
+└── services/         # Organisms: HttpService, domain API logic
+```
+
+### Where new code goes
+
+| Adding… | Place in… |
+|---------|-----------|
+| Type, label map, constant | `lib/` |
+| Single UI primitive | `components/atoms/` |
+| Small composed UI (no data fetching) | `components/molecules/` |
+| Feature section with state/API | `components/organisms/` |
+| Page shell (banner + slots) | `components/templates/` |
+| Route entry point | `app/<route>/page.tsx` |
+| HTTP / shared logic | `services/` |
+
+### Page pattern — keep routes thin
+
+```tsx
+// app/statistics/page.tsx
+export default function StatisticsPage() {
+  return (
+    <DashboardTemplate title="Service delivery statistics">
+      <StatisticsPanel />
+    </DashboardTemplate>
+  );
+}
+```
+
+Extract inline JSX from existing pages into atoms → molecules → organisms before adding new features alongside them.
+
+### Decision checklist
+
+Before creating a file, ask:
+
+1. **Can an existing atom/molecule be reused?** — Extend it; don't duplicate.
+2. **Single primitive?** → `atoms/`
+3. **Combines primitives without data fetching?** → `molecules/`
+4. **Owns a feature section (form, list, panel)?** → `organisms/`
+5. **Only defines layout regions?** → `templates/`
+6. **Next.js route?** → `app/` only; import organisms inside.
+
+### Naming
+
+- Atoms: noun — `FormField`, `StatusBadge`
+- Molecules: noun phrase — `PageBanner`, `ReportCard`
+- Organisms: feature noun — `ReportForm`, `AuthorityDashboard`
+- Templates: `*Template` suffix — `DashboardTemplate`
+- Pages: route folder + `page.tsx`
+
+## Backend (`backend/src/`)
+
+| Level | Backend equivalent | Location |
+|-------|-------------------|----------|
+| Atoms | Types, entities, utils | `domain/types/`, `domain/entities/`, `utils/` |
+| Molecules | Shared infra, data access | `common/`, `repositories/` |
+| Organisms | Business use cases | `services/` |
+| Templates | Thin HTTP adapters | `handlers/` |
+| Pages | Wiring / DI | `container/ServiceContainer.ts` |
+
+- **Handlers** — parse request, call one service method, return response. No business rules.
+- **Services** — orchestrate repositories and entities; one use case per method.
+- **Repositories** — DynamoDB access only; no domain rules.
+- **Entities** — domain behavior; no HTTP or DB code.
+
+## Anti-patterns
+
+- ❌ 200-line `page.tsx` with form, map, API calls, and success state inline
+- ❌ New feature as a single `utils.ts` dumping ground
+- ❌ Handler with filtering, validation, and persistence in one function
+- ❌ Duplicating `PageBanner` markup in every route instead of a molecule
+- ✅ Compose existing atoms/molecules; add new levels only when reuse is real
