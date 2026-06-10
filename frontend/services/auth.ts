@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
+import type { SessionUser } from '../lib/types';
 import { getAuthorityById } from './store';
-import type { SessionUser } from './types';
 
 export const SESSION_COOKIE = 'ecap_session';
 

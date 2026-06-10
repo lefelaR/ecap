@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { readData } from '../../../lib/store';
-import { computeStats } from '../../../lib/stats';
+import { readData } from '../../../services/store';
+import { computeStats } from '../../../services/stats';
 
 export async function GET() {
   const data = await readData();

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { canAccessReport, getSession } from '../../../../lib/auth';
-import { sendStatusUpdate } from '../../../../lib/email';
-import { readData, writeData } from '../../../../lib/store';
+import { canAccessReport, getSession } from '../../../../services/auth';
+import { sendStatusUpdate } from '../../../../services/email';
+import { readData, writeData } from '../../../../services/store';
 import type { ReportStatus } from '../../../../lib/types';
 
 type RouteContext = { params: { id: string } };

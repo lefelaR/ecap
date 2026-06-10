@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { SESSION_COOKIE } from '../../../../lib/auth';
-import { getAuthorityById } from '../../../../lib/store';
+import { SESSION_COOKIE } from '../../../../services/auth';
+import { getAuthorityById } from '../../../../services/store';
 
 export async function POST(request: Request) {
   const { authorityId } = (await request.json()) as { authorityId?: string };
