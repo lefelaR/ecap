@@ -1,0 +1,21 @@
+---
+description: ECAP commit message format — task type, issue number, branch, and details
+alwaysApply: true
+---
+
+# Commit messages
+
+When drafting or creating a commit message for this repo, use this subject format:
+
+```
+{taskType}#{number}-{branchName}-{details}
+```
+
+- **taskType**: `issue` (bug fix), `feature` (new capability), or `enhancement` (improvement)
+- **number**: issue/ticket number (usually the leading digits in the branch name, e.g. `7-mapbox` → `7`)
+- **branchName**: current branch from `git branch --show-current`
+- **details**: short phrase describing what changed
+
+Gather context from `git diff` and branch name before writing the message. For the full workflow and examples, use the `commit-message` skill in `.cursor/skills/commit-message/`.
+
+**Example:** `enhancement#7-7-mapbox-add frontend nvmrc for lts/krypton`
