@@ -18,4 +18,6 @@ When drafting or creating a commit message for this repo, use this subject forma
 
 Gather context from `git diff` and branch name before writing the message. For the full workflow and examples, use the `commit-message` skill in `.cursor/skills/commit-message/`.
 
+The Source Control sparkle button reads the same format from the repo-root `.cursorrules` file.
+
 **Example:** `enhancement#7-7-mapbox-add frontend nvmrc for lts/krypton`
