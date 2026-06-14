@@ -1,5 +1,5 @@
 ---
-name: update
+name: update-npm
 description: >-
   Clean-reinstall and update frontend npm packages on Node 24. Use when the user
   asks to update packages, refresh dependencies, fix npm deprecations, or

@@ -1,0 +1,19 @@
+---
+description: Clean-reinstall and update frontend npm packages on Node 24
+globs: frontend/package.json, frontend/package-lock.json
+alwaysApply: false
+---
+
+# Update npm packages
+
+When updating or reinstalling frontend dependencies, run this workflow in order from `frontend/`:
+
+1. **Delete** `node_modules` — `rm -rf frontend/node_modules` (keep `package.json` and `package-lock.json`)
+2. **Node 24** — `source ~/.nvm/nvm.sh && nvm use && node -v` (must report v24.x; run `nvm install` if needed)
+3. **Install** — `npm install` and note deprecation warnings
+4. **Resolve deprecations** — `npm outdated`, bump versions in `package.json`, prefer patch/minor within the same major; align `eslint-config-next` with `next` and `@types/react*` with `react`
+5. **Verify** — `npm run build`
+
+Run commands yourself. Do not commit unless asked. Do not modify `.env`.
+
+For the full workflow, use the `update-npm` skill in `.cursor/skills/update-npm/SKILL.md`.
