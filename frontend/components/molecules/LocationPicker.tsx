@@ -1,8 +1,7 @@
 'use client';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
-import mapboxgl from 'mapbox-gl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface LocationPickerProps {
   coords: { lat: number; lng: number };
@@ -10,36 +9,75 @@ interface LocationPickerProps {
   onUseCurrentLocation: () => void;
 }
 
+const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? '';
+
 export function LocationPicker({ coords, onCoordsChange, onUseCurrentLocation }: LocationPickerProps) {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapInstance = useRef<import('mapbox-gl').Map | null>(null);
+  const markerRef = useRef<import('mapbox-gl').Marker | null>(null);
+  const onCoordsChangeRef = useRef(onCoordsChange);
+  const [mapError, setMapError] = useState('');
 
   useEffect(() => {
-    if (!mapContainer.current || mapInstance.current) return;
+    onCoordsChangeRef.current = onCoordsChange;
+  }, [onCoordsChange]);
 
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-    const map = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [coords.lng, coords.lat],
-      zoom: 11,
-    });
+  useEffect(() => {
+    if (!mapContainer.current) return;
 
-    const marker = new mapboxgl.Marker({ draggable: true })
-      .setLngLat([coords.lng, coords.lat])
-      .addTo(map);
+    if (!mapboxToken) {
+      setMapError('Map unavailable: set NEXT_PUBLIC_MAPBOX_TOKEN in frontend/.env and restart the dev server.');
+      return;
+    }
 
-    marker.on('dragend', () => {
-      const pos = marker.getLngLat();
-      onCoordsChange({ lat: pos.lat, lng: pos.lng });
-    });
+    let cancelled = false;
 
-    markerRef.current = marker;
-    mapInstance.current = map;
+    async function initMap() {
+      try {
+        const mapboxModule = await import('mapbox-gl');
+
+        const mapboxgl = mapboxModule.default;
+        const workerUrl = (await import('mapbox-gl/dist/mapbox-gl-csp-worker?url')).default;
+        mapboxgl.workerUrl = workerUrl;
+        mapboxgl.accessToken = mapboxToken;
+
+        if (cancelled || !mapContainer.current) return;
+
+        const map = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/streets-v11',
+          center: [coords.lng, coords.lat],
+          zoom: 11,
+        });
+
+        const marker = new mapboxgl.Marker({ draggable: true })
+          .setLngLat([coords.lng, coords.lat])
+          .addTo(map);
+
+        marker.on('dragend', () => {
+          const pos = marker.getLngLat();
+          onCoordsChangeRef.current({ lat: pos.lat, lng: pos.lng });
+        });
+
+        map.on('load', () => {
+          map.resize();
+        });
+
+        markerRef.current = marker;
+        mapInstance.current = map;
+        setMapError('');
+      } catch {
+        if (!cancelled) {
+          setMapError('Unable to load the map. Check your Mapbox token and try again.');
+        }
+      }
+    }
+
+    void initMap();
 
     return () => {
-      map.remove();
+      cancelled = true;
+      mapInstance.current?.remove();
       mapInstance.current = null;
       markerRef.current = null;
     };
@@ -64,6 +102,9 @@ export function LocationPicker({ coords, onCoordsChange, onUseCurrentLocation }:
               Use current location
             </button>
           </div>
+          {mapError ? (
+            <div className="alert alert-warning mb-3">{mapError}</div>
+          ) : null}
           <div className="mapbox-container mb-3" ref={mapContainer} />
           <p className="text-muted small mb-0">Drag the pin on the map for accuracy, or use your current location.</p>
         </div>
