@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { FormEvent, useState } from 'react';
-import type { ReportType } from '../../lib/types';
+import type { ReportCategory, ReportType } from '../../lib/types';
+import { CATEGORY_LABELS, CATEGORY_SERVICE_PROVIDERS } from '../../lib/labels';
 import { HttpService, http } from '../../services/http';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { FormField } from '../atoms/FormField';
@@ -28,6 +29,7 @@ const LocationPicker = dynamic(
 
 export function PublicReportFlow() {
   const [reportType, setReportType] = useState<ReportType>('service');
+  const [category, setCategory] = useState<ReportCategory>('road-engineer');
   const [anonymous, setAnonymous] = useState(false);
   const [coords, setCoords] = useState({ lat: -26.2041, lng: 28.0473 });
   const [submitting, setSubmitting] = useState(false);
@@ -133,12 +135,32 @@ export function PublicReportFlow() {
                   </div>
                 )}
 
+                {reportType === 'service' && (
+                  <FormField label="Service provider" htmlFor="serviceProvider">
+                    <input
+                      id="serviceProvider"
+                      className="form-control"
+                      value={CATEGORY_SERVICE_PROVIDERS[category]}
+                      disabled
+                      readOnly
+                      aria-live="polite"
+                    />
+                  </FormField>
+                )}
+
                 <FormField label="Select a category" htmlFor="category">
-                  <select id="category" name="category" className="form-select" defaultValue="road-engineer">
-                    <option value="road-engineer">Road Engineer</option>
-                    <option value="water-services">Water Services</option>
-                    <option value="waste-management">Waste Management</option>
-                    <option value="safety-and-security">Safety and Security</option>
+                  <select
+                    id="category"
+                    name="category"
+                    className="form-select"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as ReportCategory)}
+                  >
+                    {(Object.entries(CATEGORY_LABELS) as [ReportCategory, string][]).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </FormField>
 
