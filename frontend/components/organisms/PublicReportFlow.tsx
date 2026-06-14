@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { FormEvent, useState } from 'react';
 import type { ReportType } from '../../lib/types';
 import { HttpService, http } from '../../services/http';
@@ -8,8 +9,22 @@ import { AlertMessage } from '../atoms/AlertMessage';
 import { FormField } from '../atoms/FormField';
 import { PageBanner } from '../atoms/PageBanner';
 import { ReportTypeToggle } from '../atoms/ReportTypeToggle';
-import { LocationPicker } from '../molecules/LocationPicker';
 import { ReportSuccessCard } from '../molecules/ReportSuccessCard';
+
+const LocationPicker = dynamic(
+  () => import('../molecules/LocationPicker').then((mod) => mod.LocationPicker),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="card shadow-sm h-100">
+        <div className="card-body map-panel">
+          <p className="text-muted mb-0">Loading map…</p>
+          <div className="mapbox-container mt-3 bg-light" />
+        </div>
+      </div>
+    ),
+  },
+);
 
 export function PublicReportFlow() {
   const [reportType, setReportType] = useState<ReportType>('service');
