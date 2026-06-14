@@ -36,6 +36,8 @@ export function PublicReportFlow() {
   const [result, setResult] = useState<{ referenceNumber: string } | null>(null);
   const [error, setError] = useState('');
 
+  const serviceProvider = CATEGORY_SERVICE_PROVIDERS[category];
+
   function useCurrentLocation() {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser.');
@@ -140,7 +142,7 @@ export function PublicReportFlow() {
                     <input
                       id="serviceProvider"
                       className="form-control"
-                      value={CATEGORY_SERVICE_PROVIDERS[category]}
+                      value={serviceProvider}
                       disabled
                       readOnly
                       aria-live="polite"
