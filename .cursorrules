@@ -1,0 +1,19 @@
+When Cursor auto-generates a Git commit message for this repository, use exactly this subject format:
+
+{taskType}#{number}-{branchName}-{details}
+
+Parts:
+- taskType: issue (bug fix), feature (new capability), or enhancement (improvement) — lowercase
+- number: issue/ticket number from the branch (e.g. branch 7-mapbox → 7)
+- branchName: current git branch name
+- details: short phrase describing what changed (not a file list)
+
+Rules:
+- Single subject line only. No conventional commits prefix. No body unless explicitly requested.
+- Infer taskType from the staged changes.
+- Read number from the leading digits of the branch name when present.
+
+Examples:
+- enhancement#7-7-mapbox-add frontend nvmrc for lts/krypton
+- issue#7-7-mapbox-fix mapbox token not loading on public report page
+- feature#7-7-mapbox-add draggable location picker to public report flow
