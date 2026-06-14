@@ -10,7 +10,7 @@ interface PageBannerProps {
 
 export function PageBanner({
   badge,
-  badgeClass = 'bg-secondary text-white',
+  badgeClass = 'bg-primary',
   title,
   lead,
   centered,

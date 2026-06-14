@@ -22,13 +22,12 @@ export function NavBar() {
   }
 
   return (
-    <header className="site-header py-3 mb-4 border-bottom bg-white shadow-sm">
+    <header className="site-header py-3 mb-0">
       <div className="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
-        <Link href="/" className="navbar-brand fw-bold mb-0 d-flex align-items-center text-decoration-none text-dark">
-          <img src="/logo.png" alt="ECAP logo" className="site-logo me-2" />
-          <span className="d-none d-md-inline">ECAP</span>
+        <Link href="/" className="navbar-brand mb-0 text-decoration-none">
+          ECAP
         </Link>
-        <nav className="nav nav-pills flex-wrap">
+        <nav className="nav site-nav flex-wrap">
           <Link className="nav-link" href="/">
             Home
           </Link>
