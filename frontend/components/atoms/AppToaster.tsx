@@ -9,19 +9,26 @@ export function AppToaster() {
       toastOptions={{
         duration: 4000,
         style: {
-          background: '#0f172a',
-          color: '#f8fafc',
+          color: '#ffffff',
         },
         success: {
+          style: {
+            background: '#16a34a',
+            color: '#ffffff',
+          },
           iconTheme: {
-            primary: '#22c55e',
-            secondary: '#f8fafc',
+            primary: '#ffffff',
+            secondary: '#16a34a',
           },
         },
         error: {
+          style: {
+            background: '#dc2626',
+            color: '#ffffff',
+          },
           iconTheme: {
-            primary: '#ef4444',
-            secondary: '#f8fafc',
+            primary: '#ffffff',
+            secondary: '#dc2626',
           },
         },
       }}

@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import { fromError, info } from '../../lib/toaster';
 import { cognitoForgotPassword } from '../../services/cognito';
-import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
@@ -13,8 +13,6 @@ export function CognitoForgotPasswordForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   if (!isCognitoConfigured()) {
     return (
@@ -28,15 +26,13 @@ export function CognitoForgotPasswordForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     try {
       await cognitoForgotPassword(email);
-      setSuccess('If an account exists for that email, a reset code has been sent.');
+      info('If an account exists for that email, a reset code has been sent.');
       router.push(`/authentication/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to send reset code.');
+      fromError(err, 'Unable to send reset code.');
     } finally {
       setLoading(false);
     }
@@ -44,9 +40,6 @@ export function CognitoForgotPasswordForm() {
 
   return (
     <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-      {success && <AlertMessage message={success} variant="success" className="mb-3" />}
-
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Email" htmlFor="email">
           <input

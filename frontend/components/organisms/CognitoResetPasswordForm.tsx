@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import { fromError, info, success } from '../../lib/toaster';
 import { cognitoResetPassword } from '../../services/cognito';
-import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
@@ -18,8 +18,7 @@ export function CognitoResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [resetComplete, setResetComplete] = useState(false);
 
   if (!isCognitoConfigured()) {
     return (
@@ -32,11 +31,9 @@ export function CognitoResetPasswordForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
-    setSuccess('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      info('Passwords do not match.');
       return;
     }
 
@@ -44,10 +41,11 @@ export function CognitoResetPasswordForm() {
 
     try {
       await cognitoResetPassword(email, code, password);
-      setSuccess('Password updated. You can now sign in with your new password.');
+      setResetComplete(true);
+      success('Password updated. You can now sign in with your new password.');
       setTimeout(() => router.push('/authentication/login'), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to reset password.');
+      fromError(err, 'Unable to reset password.');
     } finally {
       setLoading(false);
     }
@@ -55,9 +53,6 @@ export function CognitoResetPasswordForm() {
 
   return (
     <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-      {success && <AlertMessage message={success} variant="success" className="mb-3" />}
-
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Email" htmlFor="email">
           <input
@@ -120,7 +115,7 @@ export function CognitoResetPasswordForm() {
         </div>
       </form>
 
-      {success ? (
+      {resetComplete ? (
         <div className="text-center mt-4">
           <Link href="/authentication/login" className="btn btn-outline-primary">
             Go to sign in

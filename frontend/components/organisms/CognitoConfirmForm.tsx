@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import { fromError, info, success } from '../../lib/toaster';
 import { cognitoConfirmSignUp, cognitoResendConfirmationCode } from '../../services/cognito';
-import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
@@ -17,8 +17,7 @@ export function CognitoConfirmForm() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
 
   if (!isCognitoConfigured()) {
     return (
@@ -31,16 +30,15 @@ export function CognitoConfirmForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
-    setSuccess('');
     setLoading(true);
 
     try {
       await cognitoConfirmSignUp(email, code);
-      setSuccess('Account confirmed. You can now sign in.');
+      setConfirmed(true);
+      success('Account confirmed. You can now sign in.');
       setTimeout(() => router.push('/authentication/login'), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Confirmation failed.');
+      fromError(err, 'Confirmation failed.');
     } finally {
       setLoading(false);
     }
@@ -48,19 +46,17 @@ export function CognitoConfirmForm() {
 
   async function handleResend() {
     if (!email.trim()) {
-      setError('Enter your email address first.');
+      info('Enter your email address first.');
       return;
     }
 
-    setError('');
-    setSuccess('');
     setResending(true);
 
     try {
       await cognitoResendConfirmationCode(email);
-      setSuccess('A new verification code has been sent to your email.');
+      info('A new verification code has been sent to your email.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to resend code.');
+      fromError(err, 'Unable to resend code.');
     } finally {
       setResending(false);
     }
@@ -68,9 +64,6 @@ export function CognitoConfirmForm() {
 
   return (
     <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-      {success && <AlertMessage message={success} variant="success" className="mb-3" />}
-
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Email" htmlFor="email">
           <input
@@ -105,7 +98,7 @@ export function CognitoConfirmForm() {
         </div>
       </form>
 
-      {!success && (
+      {!confirmed && (
         <div className="text-center mt-3">
           <button
             type="button"
@@ -118,7 +111,7 @@ export function CognitoConfirmForm() {
         </div>
       )}
 
-      {success ? (
+      {confirmed ? (
         <div className="text-center mt-4">
           <Link href="/authentication/login" className="btn btn-outline-primary">
             Go to sign in

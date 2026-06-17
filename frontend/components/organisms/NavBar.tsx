@@ -43,18 +43,17 @@ export function NavBar() {
           {session ? (
             <>
               {session.authSource !== 'cognito' && (
-                <>
-                  {session.type === 'Application Admin' ? (
-                    <Link className="nav-link" href="/admin">
-                      Admin
-                    </Link>
-                  ) : (
-                    <Link className="nav-link" href="/authority">
-                      Authority
-                    </Link>
-                  )}
-                </>
+            <>
+              <Link className="nav-link" href="/admin">
+                Dashboard
+              </Link>
+              {session.type === 'Application Admin' && (
+                <Link className="nav-link" href="/admin/authorities">
+                  Authorities
+                </Link>
               )}
+            </>
+          )}
               <button type="button" className="nav-link btn btn-link" onClick={logout}>
                 Logout ({session.name.split(' ')[0]})
               </button>

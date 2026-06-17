@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import { fromError, info, success } from '../../lib/toaster';
 import { cognitoSignUp } from '../../services/cognito';
-import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
@@ -16,7 +16,6 @@ export function CognitoRegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   if (!isCognitoConfigured()) {
     return (
@@ -29,10 +28,9 @@ export function CognitoRegisterForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      info('Passwords do not match.');
       return;
     }
 
@@ -40,9 +38,10 @@ export function CognitoRegisterForm() {
 
     try {
       await cognitoSignUp(email, password, name);
+      success('Account created. Check your email for a verification code.');
       router.push(`/authentication/confirm?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed.');
+      fromError(err, 'Registration failed.');
     } finally {
       setLoading(false);
     }
@@ -50,8 +49,6 @@ export function CognitoRegisterForm() {
 
   return (
     <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Full name" htmlFor="name">
           <input

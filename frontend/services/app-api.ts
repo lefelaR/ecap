@@ -1,8 +1,9 @@
+import { ApiRequestError } from '../lib/api-error';
+
 async function parseJson<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as T;
+  const body = (await response.json()) as T & { error?: string };
   if (!response.ok) {
-    const error = body as { error?: string };
-    throw new Error(error.error ?? 'Request failed.');
+    throw new ApiRequestError(body.error ?? 'Request failed.', response.status);
   }
   return body;
 }

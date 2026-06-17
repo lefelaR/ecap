@@ -21,7 +21,7 @@ export function AdminPanel() {
       .get<{ user: SessionUser }>('/auth/session')
       .then(({ data }) => {
         if (data.user.type !== 'Application Admin') {
-          router.push('/authentication/login?redirect=/admin');
+          router.push('/authentication/login?redirect=/admin/authorities');
           return;
         }
         setSession(data.user);
@@ -30,7 +30,7 @@ export function AdminPanel() {
       .then((data) => {
         if (Array.isArray(data)) setAuthorities(data);
       })
-      .catch(() => router.push('/authentication/login?redirect=/admin'))
+      .catch(() => router.push('/authentication/login?redirect=/admin/authorities'))
       .finally(() => setLoading(false));
   }, [router]);
 

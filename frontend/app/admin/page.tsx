@@ -1,15 +1,15 @@
-import { AdminPanel } from '../../components/organisms/AdminPanel';
+import { AuthorityDashboard } from '../../components/organisms/AuthorityDashboard';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 
-export default function AdminPage() {
+export default function AdminDashboardPage() {
   return (
     <PageTemplate
-      badge="Application Admin"
-      badgeClass="bg-success"
-      title="Admin Control Panel"
-      lead="Register authorities, assign area-limited rights, and preserve data integrity without deletion."
+      badge="Authority"
+      badgeClass="bg-primary"
+      title="Site Administration Dashboard"
+      lead="Review reports in your jurisdiction, update status, and track expenditure."
     >
-      <AdminPanel />
+      <AuthorityDashboard />
     </PageTemplate>
   );
 }

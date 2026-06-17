@@ -43,6 +43,13 @@ export class HttpService {
     }
     return error instanceof Error ? error.message : fallback;
   }
+
+  static getResponseStatus(error: unknown): number | undefined {
+    if (axios.isAxiosError(error)) {
+      return error.response?.status;
+    }
+    return undefined;
+  }
 }
 
 export const http = new HttpService();

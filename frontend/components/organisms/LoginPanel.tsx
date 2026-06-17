@@ -2,8 +2,10 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { fromError, success } from '../../lib/toaster';
+import { getPostLoginRedirect } from '../../lib/post-login-redirect';
 import type { AuthorityType } from '../../lib/types';
-import { HttpService, http } from '../../services/http';
+import { http } from '../../services/http';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { DemoAccountButton } from '../molecules/DemoAccountButton';
 
@@ -17,21 +19,17 @@ const DEMO_ACCOUNTS = [
 export function LoginPanel() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/authority';
   const [loading, setLoading] = useState<string | null>(null);
-  const [error, setError] = useState('');
 
   async function signIn(authorityId: string) {
     setLoading(authorityId);
-    setError('');
 
     try {
       const { data } = await http.post<{ type: AuthorityType }>('/auth/login', { authorityId });
-      const destination =
-        data.type === 'Application Admin' && redirect === '/authority' ? '/admin' : redirect;
-      router.push(destination);
+      success('Signed in successfully.');
+      router.push(getPostLoginRedirect(data.type, searchParams.get('redirect')));
     } catch (err) {
-      setError(HttpService.getErrorMessage(err, 'Login failed.'));
+      fromError(err, 'Login failed.');
     } finally {
       setLoading(null);
     }
@@ -39,12 +37,6 @@ export function LoginPanel() {
 
   return (
     <>
-      {error && (
-        <div className="alert alert-danger mx-auto" style={{ maxWidth: 560 }}>
-          {error}
-        </div>
-      )}
-
       <div className="row g-3 mx-auto" style={{ maxWidth: 640 }}>
         {DEMO_ACCOUNTS.map((account) => (
           <DemoAccountButton

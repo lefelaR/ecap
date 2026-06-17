@@ -3,16 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { STATUS_LABELS } from '../../lib/labels';
-import type { Report, ReportStatus, SessionUser } from '../../lib/types';
-import { HttpService, http } from '../../services/http';
+import type { PublicStats, Report, ReportStatus, SessionUser } from '../../lib/types';
+import { dashboardApi } from '../../services/dashboard/client';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
+import { DashboardSummaryBar } from '../molecules/DashboardSummaryBar';
 import { ReportDetailPanel } from '../molecules/ReportDetailPanel';
 import { ReportListItem } from '../molecules/ReportListItem';
 
 export function AuthorityDashboard() {
   const router = useRouter();
   const [session, setSession] = useState<SessionUser | null>(null);
+  const [summary, setSummary] = useState<PublicStats | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [wardFilter, setWardFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -23,23 +25,24 @@ export function AuthorityDashboard() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    http
-      .get<{ user: SessionUser }>('/auth/session')
-      .then(({ data }) => setSession(data.user))
-      .catch(() => router.push('/authentication/login?redirect=/authority'))
+    dashboardApi
+      .getSession()
+      .then(({ user }) => setSession(user))
+      .catch(() => router.push('/authentication/login?redirect=/admin'))
       .finally(() => setLoading(false));
   }, [router]);
 
   useEffect(() => {
     if (!session) return;
 
-    const params = new URLSearchParams();
-    if (wardFilter) params.set('ward', wardFilter);
-    if (statusFilter) params.set('status', statusFilter);
+    dashboardApi
+      .getSummary()
+      .then(setSummary)
+      .catch(() => setMessage('Failed to load dashboard summary.'));
 
-    http
-      .get<Report[]>(`/reports?${params}`)
-      .then(({ data }) => setReports(data))
+    dashboardApi
+      .getReports({ ward: wardFilter || undefined, status: statusFilter || undefined })
+      .then(setReports)
       .catch(() => setMessage('Failed to load reports.'));
   }, [session, wardFilter, statusFilter]);
 
@@ -47,7 +50,7 @@ export function AuthorityDashboard() {
     if (!selected) return;
 
     try {
-      const { data: updated } = await http.patch<Report>(`/reports/${selected.id}`, {
+      const updated = await dashboardApi.updateReport(selected.id, {
         status,
         notes: notes || undefined,
         expenditure: expenditure ? Number(expenditure) : undefined,
@@ -55,8 +58,11 @@ export function AuthorityDashboard() {
       setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setSelected(updated);
       setMessage(`Report marked as ${status}. Citizen notified by email if applicable.`);
+
+      const refreshedSummary = await dashboardApi.getSummary();
+      setSummary(refreshedSummary);
     } catch (err) {
-      setMessage(HttpService.getErrorMessage(err, 'Update failed.'));
+      setMessage(err instanceof Error ? err.message : 'Update failed.');
     }
   }
 
@@ -78,7 +84,11 @@ export function AuthorityDashboard() {
         Signed in as <strong>{session.name}</strong> ({session.type})
         {session.ward !== 'All' && <> · {session.ward}</>}
       </p>
-      <p className="text-muted small mb-4">Manage ward reports, mark duplicates or cancellations, and resolve issues with expenditure tracking.</p>
+      <p className="text-muted small mb-4">
+        Manage ward reports, mark duplicates or cancellations, and resolve issues with expenditure tracking.
+      </p>
+
+      {summary && <DashboardSummaryBar summary={summary} />}
 
       {message && <AlertMessage message={message} variant="info" className="mb-3" />}
 

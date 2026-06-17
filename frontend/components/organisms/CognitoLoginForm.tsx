@@ -3,8 +3,9 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import { fromError, success } from '../../lib/toaster';
+import { getPostLoginRedirect } from '../../lib/post-login-redirect';
 import { appApi } from '../../services/app-api';
-import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
@@ -12,11 +13,9 @@ import { AuthFormLinks } from '../molecules/AuthFormLinks';
 export function CognitoLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   if (!isCognitoConfigured()) {
     return (
@@ -30,13 +29,13 @@ export function CognitoLoginForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
-      await appApi.cognitoSignIn(email, password);
-      router.push(redirect);
+      const { user } = await appApi.cognitoSignIn(email, password);
+      success('Signed in successfully.');
+      router.push(getPostLoginRedirect(user.type, searchParams.get('redirect')));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed.');
+      fromError(err, 'Sign in failed.');
     } finally {
       setLoading(false);
     }
@@ -44,8 +43,6 @@ export function CognitoLoginForm() {
 
   return (
     <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Email" htmlFor="email">
           <input
