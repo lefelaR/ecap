@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { fromError, success } from '../../lib/toaster';
 import { getPostLoginRedirect } from '../../lib/post-login-redirect';
@@ -18,7 +18,6 @@ const DEMO_ACCOUNTS = [
 
 export function LoginPanel() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
 
   async function signIn(authorityId: string) {
@@ -27,7 +26,7 @@ export function LoginPanel() {
     try {
       const { data } = await http.post<{ type: AuthorityType }>('/auth/login', { authorityId });
       success('Signed in successfully.');
-      router.push(getPostLoginRedirect(data.type, searchParams.get('redirect')));
+      router.push(getPostLoginRedirect());
     } catch (err) {
       fromError(err, 'Login failed.');
     } finally {

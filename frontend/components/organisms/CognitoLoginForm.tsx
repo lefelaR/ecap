@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { isCognitoConfigured } from '../../lib/cognito';
 import {
   AUTH_FORM_CLASS,
@@ -19,7 +19,6 @@ import { AuthFormLinks } from '../molecules/AuthFormLinks';
 
 export function CognitoLoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const form = useAuthForm({
     initialValues: loginInitialValues,
@@ -28,7 +27,7 @@ export function CognitoLoginForm() {
       try {
         const { user } = await appApi.cognitoSignIn(values.email, values.password);
         success('Signed in successfully.');
-        router.push(getPostLoginRedirect(user.type, searchParams.get('redirect')));
+        router.push(getPostLoginRedirect());
       } catch (err) {
         fromError(err, 'Sign in failed.');
       } finally {
