@@ -2,9 +2,17 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
-import { fromError, info, success } from '../../lib/toaster';
+import {
+  AUTH_FORM_CLASS,
+  fieldClassName,
+  getFieldError,
+  resetPasswordInitialValues,
+  useAuthForm,
+  validateResetPasswordForm,
+} from '../../lib/formik';
+import { fromError, success } from '../../lib/toaster';
 import { cognitoResetPassword } from '../../services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
@@ -13,12 +21,25 @@ import { AuthFormLinks } from '../molecules/AuthFormLinks';
 export function CognitoResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get('email') ?? '');
-  const [code, setCode] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [resetComplete, setResetComplete] = useState(false);
+
+  const form = useAuthForm({
+    initialValues: resetPasswordInitialValues(searchParams.get('email') ?? ''),
+    enableReinitialize: true,
+    validate: validateResetPasswordForm,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await cognitoResetPassword(values.email, values.code, values.password);
+        setResetComplete(true);
+        success('Password updated. You can now sign in with your new password.');
+        setTimeout(() => router.push('/authentication/login'), 1500);
+      } catch (err) {
+        fromError(err, 'Unable to reset password.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   if (!isCognitoConfigured()) {
     return (
@@ -29,88 +50,72 @@ export function CognitoResetPasswordForm() {
     );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (password !== confirmPassword) {
-      info('Passwords do not match.');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await cognitoResetPassword(email, code, password);
-      setResetComplete(true);
-      success('Password updated. You can now sign in with your new password.');
-      setTimeout(() => router.push('/authentication/login'), 1500);
-    } catch (err) {
-      fromError(err, 'Unable to reset password.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <>
-      <form className="row g-3" onSubmit={handleSubmit}>
-        <FormField label="Email" htmlFor="email">
+      <form className={AUTH_FORM_CLASS} onSubmit={form.handleSubmit} noValidate>
+        <FormField label="Email" htmlFor="email" error={getFieldError(form.errors, form.touched, 'email')}>
           <input
             id="email"
             name="email"
             type="email"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.email && form.errors.email))}
             autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            value={form.values.email}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
-        <FormField label="Verification code" htmlFor="code">
+        <FormField label="Verification code" htmlFor="code" error={getFieldError(form.errors, form.touched, 'code')}>
           <input
             id="code"
             name="code"
             type="text"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.code && form.errors.code))}
             autoComplete="one-time-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
+            value={form.values.code}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
-        <FormField label="New password" htmlFor="password">
+        <FormField
+          label="New password"
+          htmlFor="password"
+          error={getFieldError(form.errors, form.touched, 'password')}
+        >
           <input
             id="password"
             name="password"
             type="password"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.password && form.errors.password))}
             autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
-            required
+            value={form.values.password}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
-        <FormField label="Confirm new password" htmlFor="confirmPassword">
+        <FormField
+          label="Confirm new password"
+          htmlFor="confirmPassword"
+          error={getFieldError(form.errors, form.touched, 'confirmPassword')}
+        >
           <input
             id="confirmPassword"
             name="confirmPassword"
             type="password"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.confirmPassword && form.errors.confirmPassword))}
             autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            minLength={8}
-            required
+            value={form.values.confirmPassword}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
         <div className="col-12 d-grid">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Updating password…' : 'Reset password'}
+          <button type="submit" className="btn btn-primary" disabled={form.isSubmitting}>
+            {form.isSubmitting ? 'Updating password…' : 'Reset password'}
           </button>
         </div>
       </form>

@@ -1,8 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import {
+  AUTH_FORM_CLASS,
+  fieldClassName,
+  forgotPasswordInitialValues,
+  getFieldError,
+  useAuthForm,
+  validateForgotPasswordForm,
+} from '../../lib/formik';
 import { fromError, info } from '../../lib/toaster';
 import { cognitoForgotPassword } from '../../services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
@@ -11,8 +18,22 @@ import { AuthFormLinks } from '../molecules/AuthFormLinks';
 
 export function CognitoForgotPasswordForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const form = useAuthForm({
+    initialValues: forgotPasswordInitialValues,
+    validate: validateForgotPasswordForm,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await cognitoForgotPassword(values.email);
+        info('If an account exists for that email, a reset code has been sent.');
+        router.push(`/authentication/reset-password?email=${encodeURIComponent(values.email.trim().toLowerCase())}`);
+      } catch (err) {
+        fromError(err, 'Unable to send reset code.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   if (!isCognitoConfigured()) {
     return (
@@ -23,40 +44,25 @@ export function CognitoForgotPasswordForm() {
     );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-
-    try {
-      await cognitoForgotPassword(email);
-      info('If an account exists for that email, a reset code has been sent.');
-      router.push(`/authentication/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`);
-    } catch (err) {
-      fromError(err, 'Unable to send reset code.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <>
-      <form className="row g-3" onSubmit={handleSubmit}>
-        <FormField label="Email" htmlFor="email">
+      <form className={AUTH_FORM_CLASS} onSubmit={form.handleSubmit} noValidate>
+        <FormField label="Email" htmlFor="email" error={getFieldError(form.errors, form.touched, 'email')}>
           <input
             id="email"
             name="email"
             type="email"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.email && form.errors.email))}
             autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            value={form.values.email}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
         <div className="col-12 d-grid">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Sending code…' : 'Send reset code'}
+          <button type="submit" className="btn btn-primary" disabled={form.isSubmitting}>
+            {form.isSubmitting ? 'Sending code…' : 'Send reset code'}
           </button>
         </div>
       </form>

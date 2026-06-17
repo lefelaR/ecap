@@ -2,8 +2,17 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
+import {
+  AUTH_FORM_CLASS,
+  confirmInitialValues,
+  fieldClassName,
+  getFieldError,
+  useAuthForm,
+  validateConfirmForm,
+  validateForgotPasswordForm,
+} from '../../lib/formik';
 import { fromError, info, success } from '../../lib/toaster';
 import { cognitoConfirmSignUp, cognitoResendConfirmationCode } from '../../services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
@@ -13,11 +22,44 @@ import { AuthFormLinks } from '../molecules/AuthFormLinks';
 export function CognitoConfirmForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get('email') ?? '');
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const form = useAuthForm({
+    initialValues: confirmInitialValues(searchParams.get('email') ?? ''),
+    enableReinitialize: true,
+    validate: validateConfirmForm,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await cognitoConfirmSignUp(values.email, values.code);
+        setConfirmed(true);
+        success('Account confirmed. You can now sign in.');
+        setTimeout(() => router.push('/authentication/login'), 1500);
+      } catch (err) {
+        fromError(err, 'Confirmation failed.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  async function handleResend() {
+    if (validateForgotPasswordForm({ email: form.values.email }).email) {
+      info('Enter your email address first.');
+      return;
+    }
+
+    setResending(true);
+
+    try {
+      await cognitoResendConfirmationCode(form.values.email);
+      info('A new verification code has been sent to your email.');
+    } catch (err) {
+      fromError(err, 'Unable to resend code.');
+    } finally {
+      setResending(false);
+    }
+  }
 
   if (!isCognitoConfigured()) {
     return (
@@ -28,72 +70,38 @@ export function CognitoConfirmForm() {
     );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-
-    try {
-      await cognitoConfirmSignUp(email, code);
-      setConfirmed(true);
-      success('Account confirmed. You can now sign in.');
-      setTimeout(() => router.push('/authentication/login'), 1500);
-    } catch (err) {
-      fromError(err, 'Confirmation failed.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleResend() {
-    if (!email.trim()) {
-      info('Enter your email address first.');
-      return;
-    }
-
-    setResending(true);
-
-    try {
-      await cognitoResendConfirmationCode(email);
-      info('A new verification code has been sent to your email.');
-    } catch (err) {
-      fromError(err, 'Unable to resend code.');
-    } finally {
-      setResending(false);
-    }
-  }
-
   return (
     <>
-      <form className="row g-3" onSubmit={handleSubmit}>
-        <FormField label="Email" htmlFor="email">
+      <form className={AUTH_FORM_CLASS} onSubmit={form.handleSubmit} noValidate>
+        <FormField label="Email" htmlFor="email" error={getFieldError(form.errors, form.touched, 'email')}>
           <input
             id="email"
             name="email"
             type="email"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.email && form.errors.email))}
             autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            value={form.values.email}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
-        <FormField label="Verification code" htmlFor="code">
+        <FormField label="Verification code" htmlFor="code" error={getFieldError(form.errors, form.touched, 'code')}>
           <input
             id="code"
             name="code"
             type="text"
-            className="form-control"
+            className={fieldClassName(Boolean(form.touched.code && form.errors.code))}
             autoComplete="one-time-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
+            value={form.values.code}
+            onChange={form.handleChange}
+            onBlur={form.handleBlur}
           />
         </FormField>
 
         <div className="col-12 d-grid">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Confirming…' : 'Confirm account'}
+          <button type="submit" className="btn btn-primary" disabled={form.isSubmitting}>
+            {form.isSubmitting ? 'Confirming…' : 'Confirm account'}
           </button>
         </div>
       </form>
