@@ -26,7 +26,7 @@ export function AuthorityDashboard() {
     http
       .get<{ user: SessionUser }>('/auth/session')
       .then(({ data }) => setSession(data.user))
-      .catch(() => router.push('/login?redirect=/authority'))
+      .catch(() => router.push('/authentication/login?redirect=/authority'))
       .finally(() => setLoading(false));
   }, [router]);
 

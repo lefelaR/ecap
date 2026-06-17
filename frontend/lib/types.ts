@@ -80,6 +80,8 @@ export interface SessionUser {
   ward: string;
   municipality: string;
   canViewAnonymousCrime: boolean;
+  email?: string;
+  authSource?: 'authority' | 'cognito';
 }
 
 export type CreateReportInput = Omit<
