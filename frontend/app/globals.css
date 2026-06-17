@@ -110,6 +110,30 @@ h6 {
   --bs-btn-hover-bg: var(--ecap-charcoal);
 }
 
+@keyframes toast-slide-in-bottom-left {
+  from {
+    transform: translate3d(-110%, 110%, 0);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out-bottom-left {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(-110%, 110%, 0);
+    opacity: 0;
+  }
+}
+
 .badge.bg-primary,
 .badge.bg-info {
   background-color: var(--ecap-gold) !important;
