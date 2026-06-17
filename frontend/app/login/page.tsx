@@ -1,19 +1,10 @@
-import { Suspense } from 'react';
-import { LoginPanel } from '../../components/organisms/LoginPanel';
-import { PageTemplate } from '../../components/templates/PageTemplate';
+import { redirect } from 'next/navigation';
 
-export default function LoginPage() {
-  return (
-    <PageTemplate
-      badge="Authority login"
-      badgeClass="bg-primary"
-      title="Sign in to ECAP"
-      lead="Select a demo authority account. In production this would use secure municipal credentials."
-      centered
-    >
-      <Suspense fallback={<p className="text-center">Loading…</p>}>
-        <LoginPanel />
-      </Suspense>
-    </PageTemplate>
-  );
+export default function LoginRedirectPage({
+  searchParams,
+}: {
+  searchParams: { redirect?: string };
+}) {
+  const query = searchParams.redirect ? `?redirect=${encodeURIComponent(searchParams.redirect)}` : '';
+  redirect(`/authentication/login${query}`);
 }

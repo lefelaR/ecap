@@ -3,20 +3,20 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { SessionUser } from '../../lib/types';
-import { http } from '../../services/http';
+import { appApi } from '../../services/app-api';
 
 export function NavBar() {
   const [session, setSession] = useState<SessionUser | null>(null);
 
   useEffect(() => {
-    http
-      .get<{ user: SessionUser }>('/auth/session')
-      .then(({ data }) => setSession(data.user ?? null))
+    appApi
+      .getSession()
+      .then(({ user }) => setSession(user ?? null))
       .catch(() => setSession(null));
   }, []);
 
   async function logout() {
-    await http.post('/auth/logout');
+    await appApi.logout();
     setSession(null);
     window.location.href = '/';
   }
@@ -42,21 +42,25 @@ export function NavBar() {
           </Link>
           {session ? (
             <>
-              {session.type === 'Application Admin' ? (
-                <Link className="nav-link" href="/admin">
-                  Admin
-                </Link>
-              ) : (
-                <Link className="nav-link" href="/authority">
-                  Authority
-                </Link>
+              {session.authSource !== 'cognito' && (
+                <>
+                  {session.type === 'Application Admin' ? (
+                    <Link className="nav-link" href="/admin">
+                      Admin
+                    </Link>
+                  ) : (
+                    <Link className="nav-link" href="/authority">
+                      Authority
+                    </Link>
+                  )}
+                </>
               )}
               <button type="button" className="nav-link btn btn-link" onClick={logout}>
                 Logout ({session.name.split(' ')[0]})
               </button>
             </>
           ) : (
-            <Link className="nav-link" href="/login">
+            <Link className="nav-link" href="/authentication/login">
               Login
             </Link>
           )}
