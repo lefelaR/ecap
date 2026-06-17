@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '../auth';
-import type { SessionUser } from '../../lib/types';
+import type { SessionUser } from '@/lib/types';
 
 export async function requireDashboardSession(): Promise<
   { session: SessionUser } | { error: NextResponse }

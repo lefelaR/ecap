@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import { ApiRequestError } from './api-error';
-import { HttpService } from '../services/http';
+import { HttpService } from '@/services/http';
 
 const INFO_TOAST_STYLE = {
   background: '#ca8a04',

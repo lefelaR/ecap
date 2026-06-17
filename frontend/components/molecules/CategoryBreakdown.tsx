@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS } from '../../lib/labels';
+import { CATEGORY_LABELS } from '@/lib/labels';
 
 interface CategoryBreakdownProps {
   byCategory: Record<string, number>;

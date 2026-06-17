@@ -1,5 +1,5 @@
-import { CATEGORY_LABELS } from '../../lib/labels';
-import type { Report, ReportStatus } from '../../lib/types';
+import { CATEGORY_LABELS } from '@/lib/labels';
+import type { Report, ReportStatus } from '@/lib/types';
 
 interface ReportDetailPanelProps {
   report: Report;

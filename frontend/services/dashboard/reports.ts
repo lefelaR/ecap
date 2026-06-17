@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { canAccessReport } from '../auth';
 import { sendStatusUpdate } from '../email';
 import { readData, writeData } from '../store';
-import type { Report, ReportStatus, SessionUser } from '../../lib/types';
+import type { Report, ReportStatus, SessionUser } from '@/lib/types';
 
 export function isReportStatus(value: string): value is ReportStatus {
   return ['Open', 'Under review', 'Resolved', 'Cancelled', 'Duplicate'].includes(value);

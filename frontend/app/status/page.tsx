@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { StatusPanel } from '../../components/organisms/StatusPanel';
-import { PageTemplate } from '../../components/templates/PageTemplate';
+import { StatusPanel } from '@/components/organisms/StatusPanel';
+import { PageTemplate } from '@/components/templates/PageTemplate';
 
 export default function StatusPage() {
   return (

@@ -1,4 +1,4 @@
-import type { PublicStats } from '../../lib/types';
+import type { PublicStats } from '@/lib/types';
 import { StatTile } from '../atoms/StatTile';
 
 interface DashboardSummaryBarProps {

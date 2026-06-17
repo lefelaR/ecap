@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { CognitoConfirmForm } from '../../../components/organisms/CognitoConfirmForm';
-import { AuthenticationTemplate } from '../../../components/templates/AuthenticationTemplate';
+import { CognitoConfirmForm } from '@/components/organisms/CognitoConfirmForm';
+import { AuthenticationTemplate } from '@/components/templates/AuthenticationTemplate';
 
 export default function ConfirmPage() {
   return (

@@ -1,5 +1,5 @@
-import { AdminPanel } from '../../../components/organisms/AdminPanel';
-import { PageTemplate } from '../../../components/templates/PageTemplate';
+import { AdminPanel } from '@/components/organisms/AdminPanel';
+import { PageTemplate } from '@/components/templates/PageTemplate';
 
 export default function AdminAuthoritiesPage() {
   return (

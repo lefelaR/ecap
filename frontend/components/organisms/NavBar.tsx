@@ -1,25 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import type { SessionUser } from '../../lib/types';
-import { appApi } from '../../services/app-api';
+import { useSession } from './SessionProvider';
 
 export function NavBar() {
-  const [session, setSession] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    appApi
-      .getSession()
-      .then(({ user }) => setSession(user ?? null))
-      .catch(() => setSession(null));
-  }, []);
-
-  async function logout() {
-    await appApi.logout();
-    setSession(null);
-    window.location.href = '/';
-  }
+  const { session, logout } = useSession();
 
   return (
     <header className="site-header py-3 mb-0">
@@ -43,18 +28,18 @@ export function NavBar() {
           {session ? (
             <>
               {session.authSource !== 'cognito' && (
-            <>
-              <Link className="nav-link" href="/admin">
-                Dashboard
-              </Link>
-              {session.type === 'Application Admin' && (
-                <Link className="nav-link" href="/admin/authorities">
-                  Authorities
-                </Link>
+                <>
+                  <Link className="nav-link" href="/admin">
+                    Dashboard
+                  </Link>
+                  {session.type === 'Application Admin' && (
+                    <Link className="nav-link" href="/admin/authorities">
+                      Authorities
+                    </Link>
+                  )}
+                </>
               )}
-            </>
-          )}
-              <button type="button" className="nav-link btn btn-link" onClick={logout}>
+              <button type="button" className="nav-link btn btn-link" onClick={() => void logout()}>
                 Logout ({session.name.split(' ')[0]})
               </button>
             </>

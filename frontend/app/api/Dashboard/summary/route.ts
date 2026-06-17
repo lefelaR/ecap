@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getDashboardSummary } from '../../../../services/dashboard/summary';
-import { requireDashboardSession } from '../../../../services/dashboard/session';
+import { getDashboardSummary } from '@/services/dashboard/summary';
+import { requireDashboardSession } from '@/services/dashboard/session';
 
 export async function GET() {
   const result = await requireDashboardSession();

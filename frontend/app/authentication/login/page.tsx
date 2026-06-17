@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { CognitoLoginForm } from '../../../components/organisms/CognitoLoginForm';
-import { AuthenticationTemplate } from '../../../components/templates/AuthenticationTemplate';
+import { CognitoLoginForm } from '@/components/organisms/CognitoLoginForm';
+import { AuthenticationTemplate } from '@/components/templates/AuthenticationTemplate';
 
 export default function LoginPage() {
   return (

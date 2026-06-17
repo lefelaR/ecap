@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { isCognitoConfigured } from '../../lib/cognito';
+import { isCognitoConfigured } from '@/lib/cognito';
 import {
   AUTH_FORM_CLASS,
   fieldClassName,
@@ -9,9 +9,9 @@ import {
   getFieldError,
   useAuthForm,
   validateForgotPasswordForm,
-} from '../../lib/formik';
-import { fromError, info } from '../../lib/toaster';
-import { cognitoForgotPassword } from '../../services/cognito';
+} from '@/lib/formik';
+import { fromError, info } from '@/lib/toaster';
+import { cognitoForgotPassword } from '@/services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';

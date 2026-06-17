@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { updateDashboardReport } from '../../../../../services/dashboard/reports';
-import { requireDashboardSession } from '../../../../../services/dashboard/session';
-import type { ReportStatus } from '../../../../../lib/types';
+import { updateDashboardReport } from '@/services/dashboard/reports';
+import { requireDashboardSession } from '@/services/dashboard/session';
+import type { ReportStatus } from '@/lib/types';
 
 type RouteContext = { params: { id: string } };
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireDashboardSession } from '../../../../services/dashboard/session';
+import { requireDashboardSession } from '@/services/dashboard/session';
 
 export async function GET() {
   const result = await requireDashboardSession();

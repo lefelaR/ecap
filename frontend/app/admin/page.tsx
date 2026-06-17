@@ -1,5 +1,5 @@
-import { AuthorityDashboard } from '../../components/organisms/AuthorityDashboard';
-import { PageTemplate } from '../../components/templates/PageTemplate';
+import { AuthorityDashboard } from '@/components/organisms/AuthorityDashboard';
+import { PageTemplate } from '@/components/templates/PageTemplate';
 
 export default function AdminDashboardPage() {
   return (

@@ -1,5 +1,5 @@
-import { CognitoRegisterForm } from '../../../components/organisms/CognitoRegisterForm';
-import { AuthenticationTemplate } from '../../../components/templates/AuthenticationTemplate';
+import { CognitoRegisterForm } from '@/components/organisms/CognitoRegisterForm';
+import { AuthenticationTemplate } from '@/components/templates/AuthenticationTemplate';
 
 export default function RegisterPage() {
   return (

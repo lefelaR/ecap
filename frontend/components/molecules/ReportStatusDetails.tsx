@@ -1,5 +1,5 @@
-import { CATEGORY_LABELS } from '../../lib/labels';
-import type { ReportLookupResult } from '../../lib/types';
+import { CATEGORY_LABELS } from '@/lib/labels';
+import type { ReportLookupResult } from '@/lib/types';
 
 interface ReportStatusDetailsProps {
   result: ReportLookupResult | null;

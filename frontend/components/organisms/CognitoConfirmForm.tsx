@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { isCognitoConfigured } from '../../lib/cognito';
+import { isCognitoConfigured } from '@/lib/cognito';
 import {
   AUTH_FORM_CLASS,
   confirmInitialValues,
@@ -12,9 +12,9 @@ import {
   useAuthForm,
   validateConfirmForm,
   validateForgotPasswordForm,
-} from '../../lib/formik';
-import { fromError, info, success } from '../../lib/toaster';
-import { cognitoConfirmSignUp, cognitoResendConfirmationCode } from '../../services/cognito';
+} from '@/lib/formik';
+import { fromError, info, success } from '@/lib/toaster';
+import { cognitoConfirmSignUp, cognitoResendConfirmationCode } from '@/services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';

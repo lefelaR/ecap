@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
-import { cognitoConfig, isCognitoConfigured } from '../../../../../lib/cognito';
-import { cognitoPayloadToSessionUser, setCognitoSessionCookies } from '../../../../../services/cognito-session';
+import { cognitoConfig, isCognitoConfigured } from '@/lib/cognito';
+import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
+import { cognitoPayloadToSessionUser } from '@/services/cognito-session';
 
 async function proxyCognitoLogin(email: string, password: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
@@ -26,12 +27,13 @@ async function proxyCognitoLogin(email: string, password: string) {
     return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
   }
 
-  if (!data.user || !data.idToken || !data.refreshToken) {
+  if (!data.user || !data.idToken) {
     return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
   }
 
+  const sessionId = await establishSession(data.user);
   const response = NextResponse.json({ user: data.user });
-  setCognitoSessionCookies(response, { idToken: data.idToken, refreshToken: data.refreshToken });
+  response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
   return response;
 }
 
@@ -54,9 +56,9 @@ export async function POST(request: Request) {
     }
   }
 
-  const { idToken, refreshToken } = body;
+  const { idToken } = body;
 
-  if (!idToken || !refreshToken) {
+  if (!idToken) {
     return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
   }
 
@@ -69,8 +71,9 @@ export async function POST(request: Request) {
 
     const payload = await verifier.verify(idToken);
     const user = cognitoPayloadToSessionUser(payload);
+    const sessionId = await establishSession(user);
     const response = NextResponse.json({ user });
-    setCognitoSessionCookies(response, { idToken, refreshToken });
+    response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
     return response;
   } catch {
     return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 401 });

@@ -1,4 +1,4 @@
-import type { PublicStats, Report, ReportStatus, SessionUser } from '../../lib/types';
+import type { PublicStats, Report, ReportStatus, SessionUser } from '@/lib/types';
 
 async function parseJson<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & { error?: string };

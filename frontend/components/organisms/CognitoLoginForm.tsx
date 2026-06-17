@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { isCognitoConfigured } from '../../lib/cognito';
+import { isCognitoConfigured } from '@/lib/cognito';
 import {
   AUTH_FORM_CLASS,
   fieldClassName,
@@ -9,23 +9,26 @@ import {
   loginInitialValues,
   useAuthForm,
   validateLoginForm,
-} from '../../lib/formik';
-import { getPostLoginRedirect } from '../../lib/post-login-redirect';
-import { fromError, success } from '../../lib/toaster';
-import { appApi } from '../../services/app-api';
+} from '@/lib/formik';
+import { getPostLoginRedirect } from '@/lib/post-login-redirect';
+import { fromError, success } from '@/lib/toaster';
+import { appApi } from '@/services/app-api';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
+import { useSession } from './SessionProvider';
 
 export function CognitoLoginForm() {
   const router = useRouter();
+  const { refreshSession } = useSession();
 
   const form = useAuthForm({
     initialValues: loginInitialValues,
     validate: validateLoginForm,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const { user } = await appApi.cognitoSignIn(values.email, values.password);
+        await appApi.cognitoSignIn(values.email, values.password);
+        await refreshSession();
         success('Signed in successfully.');
         router.push(getPostLoginRedirect());
       } catch (err) {

@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { STATUS_LABELS } from '../../lib/labels';
-import type { PublicStats, Report, ReportStatus, SessionUser } from '../../lib/types';
-import { dashboardApi } from '../../services/dashboard/client';
+import { STATUS_LABELS } from '@/lib/labels';
+import type { PublicStats, Report, ReportStatus, SessionUser } from '@/lib/types';
+import { dashboardApi } from '@/services/dashboard/client';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { DashboardSummaryBar } from '../molecules/DashboardSummaryBar';

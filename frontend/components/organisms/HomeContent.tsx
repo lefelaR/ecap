@@ -1,25 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ADMIN_CONTROL_PATH, REPORT_DASHBOARD_PATH } from '../../lib/post-login-redirect';
-import type { SessionUser } from '../../lib/types';
-import { appApi } from '../../services/app-api';
+import { ADMIN_CONTROL_PATH, REPORT_DASHBOARD_PATH } from '@/lib/post-login-redirect';
+import { useSession } from './SessionProvider';
 import { ActionCard } from '../atoms/ActionCard';
 
 export function HomeContent() {
-  const [session, setSession] = useState<SessionUser | null>(null);
-  const [sessionReady, setSessionReady] = useState(false);
+  const { session, ready } = useSession();
 
-  useEffect(() => {
-    appApi
-      .getSession()
-      .then(({ user }) => setSession(user ?? null))
-      .catch(() => setSession(null))
-      .finally(() => setSessionReady(true));
-  }, []);
-
-  const isLoggedIn = sessionReady && session !== null;
+  const isLoggedIn = ready && session !== null;
   const isAuthorityUser = isLoggedIn && session.authSource !== 'cognito';
   const isApplicationAdmin = isLoggedIn && session.type === 'Application Admin';
 

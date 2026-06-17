@@ -1,4 +1,4 @@
-import type { PublicStats, Report } from '../lib/types';
+import type { PublicStats, Report } from '@/lib/types';
 
 export function computeStats(reports: Report[]): PublicStats {
   const resolved = reports.filter((r) => r.status === 'Resolved' && r.resolvedAt);

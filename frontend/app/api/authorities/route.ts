@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '../../../services/auth';
-import { readData, writeData } from '../../../services/store';
-import type { Authority, AuthorityType } from '../../../lib/types';
+import { getSession } from '@/services/auth';
+import { readData, writeData } from '@/services/store';
+import type { Authority, AuthorityType } from '@/lib/types';
 
 export async function GET() {
   const session = await getSession();

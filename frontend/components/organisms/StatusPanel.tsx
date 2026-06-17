@@ -2,8 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import type { ReportLookupResult } from '../../lib/types';
-import { HttpService, http } from '../../services/http';
+import type { ReportLookupResult } from '@/lib/types';
+import { HttpService, http } from '@/services/http';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { ReportLookupForm } from '../molecules/ReportLookupForm';
 import { ReportStatusDetails } from '../molecules/ReportStatusDetails';

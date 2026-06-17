@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { FormEvent, useState } from 'react';
-import type { ReportCategory, ReportType } from '../../lib/types';
-import { CATEGORY_LABELS, CATEGORY_SERVICE_PROVIDERS } from '../../lib/labels';
-import { HttpService, http } from '../../services/http';
+import type { ReportCategory, ReportType } from '@/lib/types';
+import { CATEGORY_LABELS, CATEGORY_SERVICE_PROVIDERS } from '@/lib/labels';
+import { HttpService, http } from '@/services/http';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { FormField } from '../atoms/FormField';
 import { PageBanner } from '../atoms/PageBanner';

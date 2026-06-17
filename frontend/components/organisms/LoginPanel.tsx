@@ -2,12 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { fromError, success } from '../../lib/toaster';
-import { getPostLoginRedirect } from '../../lib/post-login-redirect';
-import type { AuthorityType } from '../../lib/types';
-import { http } from '../../services/http';
+import { fromError, success } from '@/lib/toaster';
+import { getPostLoginRedirect } from '@/lib/post-login-redirect';
+import { appApi } from '@/services/app-api';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { DemoAccountButton } from '../molecules/DemoAccountButton';
+import { useSession } from './SessionProvider';
 
 const DEMO_ACCOUNTS = [
   { id: 'auth-admin', label: 'Application Admin', description: 'Full system access' },
@@ -18,13 +18,15 @@ const DEMO_ACCOUNTS = [
 
 export function LoginPanel() {
   const router = useRouter();
+  const { refreshSession } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
 
   async function signIn(authorityId: string) {
     setLoading(authorityId);
 
     try {
-      const { data } = await http.post<{ type: AuthorityType }>('/auth/login', { authorityId });
+      await appApi.authorityLogin(authorityId);
+      await refreshSession();
       success('Signed in successfully.');
       router.push(getPostLoginRedirect());
     } catch (err) {

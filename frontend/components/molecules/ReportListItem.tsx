@@ -1,4 +1,4 @@
-import type { Report } from '../../lib/types';
+import type { Report } from '@/lib/types';
 
 interface ReportListItemProps {
   report: Report;

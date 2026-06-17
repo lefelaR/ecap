@@ -1,4 +1,4 @@
-import type { PublicStats, SessionUser } from '../../lib/types';
+import type { PublicStats, SessionUser } from '@/lib/types';
 import { computeStats } from '../stats';
 import { listDashboardReports } from './reports';
 

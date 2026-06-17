@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { isCognitoConfigured } from '../../lib/cognito';
+import { isCognitoConfigured } from '@/lib/cognito';
 import {
   AUTH_FORM_CLASS,
   fieldClassName,
@@ -11,9 +11,9 @@ import {
   resetPasswordInitialValues,
   useAuthForm,
   validateResetPasswordForm,
-} from '../../lib/formik';
-import { fromError, success } from '../../lib/toaster';
-import { cognitoResetPassword } from '../../services/cognito';
+} from '@/lib/formik';
+import { fromError, success } from '@/lib/toaster';
+import { cognitoResetPassword } from '@/services/cognito';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
