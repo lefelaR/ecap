@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
 import { cognitoSignUp } from '../../services/cognito';
@@ -10,13 +10,13 @@ import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
 
 export function CognitoRegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   if (!isCognitoConfigured()) {
     return (
@@ -30,7 +30,6 @@ export function CognitoRegisterForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
-    setSuccess('');
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
@@ -41,7 +40,7 @@ export function CognitoRegisterForm() {
 
     try {
       await cognitoSignUp(email, password, name);
-      setSuccess('Account created. Check your email for a verification code, then sign in.');
+      router.push(`/authentication/confirm?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed.');
     } finally {
@@ -52,7 +51,6 @@ export function CognitoRegisterForm() {
   return (
     <>
       {error && <AlertMessage message={error} className="mb-3" />}
-      {success && <AlertMessage message={success} variant="success" className="mb-3" />}
 
       <form className="row g-3" onSubmit={handleSubmit}>
         <FormField label="Full name" htmlFor="name">
@@ -116,15 +114,7 @@ export function CognitoRegisterForm() {
         </div>
       </form>
 
-      {success ? (
-        <div className="text-center mt-4">
-          <Link href="/authentication/login" className="btn btn-outline-primary">
-            Go to sign in
-          </Link>
-        </div>
-      ) : (
-        <AuthFormLinks mode="register" />
-      )}
+      <AuthFormLinks mode="register" />
 
       <div className="text-center mt-3">
         <BackHomeLink />

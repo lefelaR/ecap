@@ -39,6 +39,8 @@ provider:
     AUTHORITIES_TABLE: !Ref AuthoritiesTable
     EMAIL_NOTIFICATIONS_TABLE: !Ref EmailNotificationsTable
     USER_SESSIONS_TABLE: !Ref UserSessionsTable
+    COGNITO_USER_POOL_ID: !Ref EcapUserPool
+    COGNITO_CLIENT_ID: !Ref EcapUserPoolClient
     SESSION_COOKIE_NAME: ecap_session
     SESSION_TTL_HOURS: '8'
   iam:
@@ -61,6 +63,16 @@ provider:
             - !GetAtt EmailNotificationsTable.Arn
             - !Sub '${EmailNotificationsTable.Arn}/index/*'
             - !GetAtt UserSessionsTable.Arn
+        - Effect: Allow
+          Action:
+            - cognito-idp:InitiateAuth
+            - cognito-idp:SignUp
+            - cognito-idp:ForgotPassword
+            - cognito-idp:ConfirmForgotPassword
+            - cognito-idp:ConfirmSignUp
+            - cognito-idp:ResendConfirmationCode
+          Resource:
+            - !GetAtt EcapUserPool.Arn
   httpApi:
     cors:
       allowedOrigins: ${self:custom.corsAllowedOrigins}
@@ -146,6 +158,48 @@ functions:
           path: /auth/session
           method: get
 
+  cognitoLogin:
+    handler: src/handlers/auth/cognitoLogin.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/login
+          method: post
+
+  cognitoRegister:
+    handler: src/handlers/auth/cognitoRegister.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/register
+          method: post
+
+  cognitoForgotPassword:
+    handler: src/handlers/auth/cognitoForgotPassword.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/forgot-password
+          method: post
+
+  cognitoResetPassword:
+    handler: src/handlers/auth/cognitoResetPassword.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/reset-password
+          method: post
+
+  cognitoConfirm:
+    handler: src/handlers/auth/cognitoConfirm.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/confirm
+          method: post
+
+  cognitoResendConfirmation:
+    handler: src/handlers/auth/cognitoResendConfirmation.handler
+    events:
+      - httpApi:
+          path: /auth/cognito/resend-confirmation
+          method: post
+
   getStats:
     handler: src/handlers/stats/getStats.handler
     events:
@@ -155,3 +209,4 @@ functions:
 
 resources:
   - ${file(./cloudformation/dynamodb-tables.yml)}
+  - ${file(./cloudformation/cognito-user-pool.yml)}

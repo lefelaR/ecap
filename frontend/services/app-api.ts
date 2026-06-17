@@ -16,12 +16,12 @@ export const appApi = {
     return parseJson<{ authenticated: boolean; user: import('../lib/types').SessionUser | null }>(response);
   },
 
-  async cognitoLogin(tokens: { idToken: string; accessToken: string; refreshToken: string }) {
+  async cognitoSignIn(email: string, password: string) {
     const response = await fetch('/api/auth/cognito/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(tokens),
+      body: JSON.stringify({ email, password }),
     });
     return parseJson<{ user: import('../lib/types').SessionUser }>(response);
   },

@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { isCognitoConfigured } from '../../lib/cognito';
-import { cognitoSignIn } from '../../services/cognito';
 import { appApi } from '../../services/app-api';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { BackHomeLink } from '../atoms/BackHomeLink';
@@ -34,8 +33,7 @@ export function CognitoLoginForm() {
     setError('');
 
     try {
-      const tokens = await cognitoSignIn(email, password);
-      await appApi.cognitoLogin(tokens);
+      await appApi.cognitoSignIn(email, password);
       router.push(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed.');

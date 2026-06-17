@@ -5,9 +5,9 @@
   "description": "ECAP serverless API — Node.js, TypeScript, DynamoDB",
   "scripts": {
     "build": "tsc --noEmit",
-    "deploy": "serverless deploy",
-    "deploy:dev": "serverless deploy --stage dev",
-    "info": "serverless info --stage dev",
+    "deploy": "serverless deploy && tsx scripts/print-stack-outputs.ts",
+    "deploy:dev": "serverless deploy --stage dev && tsx scripts/print-stack-outputs.ts --stage dev",
+    "info": "serverless info --stage dev && tsx scripts/print-stack-outputs.ts --stage dev",
     "print": "serverless print --stage dev",
     "remove": "serverless remove",
     "offline": "serverless offline start",
@@ -15,12 +15,15 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.758.0",
     "@aws-sdk/client-dynamodb": "^3.758.0",
     "@aws-sdk/lib-dynamodb": "^3.758.0",
+    "aws-jwt-verify": "^5.2.1",
     "lambda-multipart-parser": "^1.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-cloudformation": "^3.758.0",
     "@types/aws-lambda": "^8.10.147",
     "@types/node": "^20.14.2",
     "@types/uuid": "^10.0.0",
