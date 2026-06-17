@@ -44,13 +44,13 @@ export function HomeContent() {
           <ActionCard
             title="Authority dashboard"
             description="Manage ward reports, resolve issues, mark duplicates, and track expenditure."
-            href="/login?redirect=/authority"
+            href="/authentication/login?redirect=/authority"
             buttonLabel="Authority Login"
           />
           <ActionCard
             title="Admin control"
             description="Register authorities, assign area-limited rights, and preserve data integrity without deletion."
-            href="/login?redirect=/admin"
+            href="/authentication/login?redirect=/admin"
             buttonLabel="Admin Login"
           />
         </div>
