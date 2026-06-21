@@ -51,8 +51,7 @@ Use **Login** and pick a demo authority:
 - `app/public/` — public reporting flow
 - `app/status/` — reference number lookup
 - `app/statistics/` — public transparency dashboard
-- `app/authority/` — authority issue management
-- `app/admin/` — authority registration
+- `app/admin/` — site administration dashboard and authority registration
 - `app/api/` — REST API (reports, auth, stats, authorities)
 - `lib/` — shared types and labels
 - `services/` — auth, store, email, and statistics services

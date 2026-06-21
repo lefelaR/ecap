@@ -4,8 +4,9 @@ import { Roboto } from 'next/font/google';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/fontawesome-free/5.0.2/css/all.css';
 import './globals.css';
-import { AppToaster } from '../components/atoms/AppToaster';
-import { NavBar } from '../components/organisms/NavBar';
+import { AppToaster } from '@/components/atoms/AppToaster';
+import { NavBar } from '@/components/organisms/NavBar';
+import { SessionProvider } from '@/components/organisms/SessionProvider';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -22,9 +23,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={roboto.className}>
-        <AppToaster />
-        <NavBar />
-        {children}
+        <SessionProvider>
+          <AppToaster />
+          <NavBar />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

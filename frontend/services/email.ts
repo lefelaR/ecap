@@ -1,4 +1,4 @@
-import type { Report } from '../lib/types';
+import type { Report } from '@/lib/types';
 import { readData, writeData } from './store';
 
 export async function sendReportConfirmation(report: Report): Promise<void> {

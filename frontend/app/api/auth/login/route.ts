@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { SESSION_COOKIE } from '../../../../services/auth';
-import { getAuthorityById } from '../../../../services/store';
+import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
+import { getAuthorityById } from '@/services/store';
 
 export async function POST(request: Request) {
   const { authorityId } = (await request.json()) as { authorityId?: string };
@@ -14,6 +14,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid account.' }, { status: 401 });
   }
 
+  const sessionId = await establishSession({
+    authorityId: authority.id,
+    name: authority.name,
+    type: authority.type,
+    ward: authority.ward,
+    municipality: authority.municipality,
+    canViewAnonymousCrime: authority.canViewAnonymousCrime,
+    authSource: 'authority',
+  });
+
   const response = NextResponse.json({
     authorityId: authority.id,
     name: authority.name,
@@ -22,12 +32,6 @@ export async function POST(request: Request) {
     municipality: authority.municipality,
   });
 
-  response.cookies.set(SESSION_COOKIE, authority.id, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 8,
-  });
-
+  response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
   return response;
 }

@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import type { AuthorityType } from '../../lib/types';
+import type { AuthorityType } from '@/lib/types';
 
 interface AuthorityRegistrationFormProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;

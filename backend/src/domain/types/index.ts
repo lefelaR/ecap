@@ -69,6 +69,8 @@ export interface SessionUser {
   ward: string;
   municipality: string;
   canViewAnonymousCrime: boolean;
+  email?: string;
+  authSource?: 'authority' | 'cognito';
 }
 
 export interface PublicStats {
