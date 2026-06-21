@@ -14,10 +14,19 @@ const BACKEND_ENV_BY_OUTPUT_KEY: Record<string, string> = {
 };
 
 const FRONTEND_ENV_BY_OUTPUT_KEY: Record<string, string> = {
+  HttpApiUrl: 'NEXT_PUBLIC_API_URL',
   CognitoUserPoolId: 'NEXT_PUBLIC_COGNITO_USER_POOL_ID',
   CognitoUserPoolClientId: 'NEXT_PUBLIC_COGNITO_CLIENT_ID',
   ReportPhotosBucketName: 'NEXT_PUBLIC_REPORT_PHOTOS_BUCKET',
 };
+
+function envFilePaths(stage: string): { backend: string; frontend: string } {
+  const suffix = stage === 'dev' ? '' : `.${stage}`;
+  return {
+    backend: join(__dirname, `../.env${suffix}`),
+    frontend: join(__dirname, `../../frontend/.env${suffix}`),
+  };
+}
 
 function parseStage(): string {
   const stageIndex = process.argv.indexOf('--stage');
@@ -109,8 +118,7 @@ async function main(): Promise<void> {
   console.log(`  NEXT_PUBLIC_COGNITO_REGION=${region}`);
   console.log(`  NEXT_PUBLIC_AWS_REGION=${region}`);
 
-  const backendEnvPath = join(__dirname, '../.env');
-  const frontendEnvPath = join(__dirname, '../../frontend/.env');
+  const { backend: backendEnvPath, frontend: frontendEnvPath } = envFilePaths(stage);
 
   updateEnvFile(backendEnvPath, backendEnvUpdates);
   updateEnvFile(frontendEnvPath, frontendEnvUpdates);

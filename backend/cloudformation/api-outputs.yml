@@ -1,0 +1,6 @@
+Outputs:
+  HttpApiUrl:
+    Description: Base URL for the ECAP HTTP API
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+    Export:
+      Name: ${self:service}-${self:provider.stage}-HttpApiUrl

@@ -8,13 +8,24 @@ plugins:
 
 custom:
   deploymentRegion: eu-central-1
-  # API Gateway rejects allowCredentials with origin '*'. Add your production frontend URL here.
-  corsAllowedOrigins:
-    - http://localhost:3000
-    - http://127.0.0.1:3000
+  # Per-stage settings. Deploy dev:  serverless deploy --stage dev
+  # Deploy prod: serverless deploy --stage prod  (stack: ecap-api-prod)
+  stages:
+    dev:
+      corsAllowedOrigins:
+        - http://localhost:3000
+        - http://127.0.0.1:3000
+      esbuildMinify: false
+    prod:
+      # API Gateway rejects allowCredentials with origin '*'. Set before prod deploy:
+      #   export PROD_CORS_ORIGIN=https://your-production-frontend.example.com
+      corsAllowedOrigins:
+        - ${env:PROD_CORS_ORIGIN, 'https://example.com'}
+      esbuildMinify: true
+  corsAllowedOrigins: ${self:custom.stages.${self:provider.stage}.corsAllowedOrigins}
   esbuild:
     bundle: true
-    minify: false
+    minify: ${self:custom.stages.${self:provider.stage}.esbuildMinify}
     sourcemap: true
     target: node20
     platform: node
@@ -210,3 +221,4 @@ functions:
 resources:
   - ${file(./cloudformation/dynamodb-tables.yml)}
   - ${file(./cloudformation/cognito-user-pool.yml)}
+  - ${file(./cloudformation/api-outputs.yml)}
