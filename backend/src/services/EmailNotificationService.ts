@@ -17,12 +17,17 @@ export class EmailNotificationService {
   }
 
   async sendConfirmation(report: ServiceReport): Promise<void> {
+    await this.dispatch(EmailNotification.adminAlert(report));
+
     try {
       await this.dispatch(EmailNotification.confirmation(report));
     } catch (error) {
-      if (error instanceof Error && error.message === 'SKIP_EMAIL') return;
-      throw error;
+      if (!(error instanceof Error && error.message === 'SKIP_EMAIL')) {
+        throw error;
+      }
     }
+
+    await this.dispatch(EmailNotification.departmentAlert(report));
   }
 
   async sendStatusUpdate(report: ServiceReport): Promise<void> {

@@ -1,5 +1,5 @@
 import type { Report } from '@/lib/types';
-import { renderMailMessage } from './mail/render';
+import { buildReportSubmittedMessages, renderMailMessage } from './mail/render';
 import { createDefaultMailTransport } from './mail/transport';
 import type { MailMessage, MailResult, MailTransport } from './mail/types';
 
@@ -20,9 +20,14 @@ class MailService {
 
     return {
       ...rendered,
-      id: `email-${Date.now()}`,
+      id: `email-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       sentAt: new Date().toISOString(),
     };
+  }
+
+  async sendReportSubmitted(report: Report): Promise<MailResult[]> {
+    const results = await Promise.all(buildReportSubmittedMessages(report).map((message) => this.send(message)));
+    return results.filter((result): result is MailResult => result !== null);
   }
 
   reportConfirmation(report: Report): Promise<MailResult | null> {

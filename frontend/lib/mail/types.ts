@@ -1,10 +1,16 @@
 import type { Report } from '@/lib/types';
 
-export type MailMessageType = 'reportConfirmation' | 'reportStatusUpdate';
+export type MailMessageType =
+  | 'reportConfirmation'
+  | 'reportStatusUpdate'
+  | 'reportAdminAlert'
+  | 'reportDepartmentAlert';
 
 export type MailMessage =
   | { type: 'reportConfirmation'; report: Report }
-  | { type: 'reportStatusUpdate'; report: Report };
+  | { type: 'reportStatusUpdate'; report: Report }
+  | { type: 'reportAdminAlert'; report: Report }
+  | { type: 'reportDepartmentAlert'; report: Report };
 
 export interface RenderedMail {
   to: string;
