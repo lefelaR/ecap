@@ -6,7 +6,6 @@ import { STATUS_LABELS } from '@/lib/labels';
 import type { PublicStats, Report, ReportStatus, SessionUser } from '@/lib/types';
 import { dashboardApi } from '@/services/dashboard/client';
 import { AlertMessage } from '../atoms/AlertMessage';
-import { BackHomeLink } from '../atoms/BackHomeLink';
 import { DashboardSummaryBar } from '../molecules/DashboardSummaryBar';
 import { ReportDetailPanel } from '../molecules/ReportDetailPanel';
 import { ReportListItem } from '../molecules/ReportListItem';
@@ -27,8 +26,14 @@ export function AuthorityDashboard() {
   useEffect(() => {
     dashboardApi
       .getSession()
-      .then(({ user }) => setSession(user))
-      .catch(() => router.push('/authentication/login?redirect=/admin'))
+      .then(({ user }) => {
+        if (user.authSource === 'cognito') {
+          router.push('/admin');
+          return;
+        }
+        setSession(user);
+      })
+      .catch(() => router.push('/authentication/login?redirect=/admin/reports'))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -153,9 +158,6 @@ export function AuthorityDashboard() {
         </div>
       </div>
 
-      <div className="mt-4">
-        <BackHomeLink className="btn btn-secondary" />
-      </div>
     </>
   );
 }

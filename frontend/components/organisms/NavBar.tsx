@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { SYSTEM_DASHBOARD_PATH } from '@/lib/post-login-redirect';
 import { useSession } from './SessionProvider';
 
 export function NavBar() {
-  const { session, logout } = useSession();
+  const { session } = useSession();
 
   return (
     <header className="site-header py-3 mb-0">
@@ -16,33 +17,13 @@ export function NavBar() {
           <Link className="nav-link" href="/">
             Home
           </Link>
-          <Link className="nav-link" href="/public">
-            Report
-          </Link>
           <Link className="nav-link" href="/status">
             Status
           </Link>
-          <Link className="nav-link" href="/statistics">
-            Statistics
-          </Link>
           {session ? (
-            <>
-              {session.authSource !== 'cognito' && (
-                <>
-                  <Link className="nav-link" href="/admin">
-                    Dashboard
-                  </Link>
-                  {session.type === 'Application Admin' && (
-                    <Link className="nav-link" href="/admin/authorities">
-                      Authorities
-                    </Link>
-                  )}
-                </>
-              )}
-              <button type="button" className="nav-link btn btn-link" onClick={() => void logout()}>
-                Logout ({session.name.split(' ')[0]})
-              </button>
-            </>
+            <Link className="nav-link" href={SYSTEM_DASHBOARD_PATH}>
+              Dashboard
+            </Link>
           ) : (
             <Link className="nav-link" href="/authentication/login">
               Login
