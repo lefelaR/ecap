@@ -1,10 +1,10 @@
 import type { Report } from '@/lib/types';
 import { renderMailMessage } from './mail/render';
-import { consoleMailTransport } from './mail/transport';
+import { createDefaultMailTransport } from './mail/transport';
 import type { MailMessage, MailResult, MailTransport } from './mail/types';
 
 class MailService {
-  #transport: MailTransport = consoleMailTransport;
+  #transport: MailTransport = createDefaultMailTransport();
 
   setTransport(transport: MailTransport): void {
     this.#transport = transport;
