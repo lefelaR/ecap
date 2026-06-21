@@ -2,7 +2,12 @@
   "name": "ecap",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
+    "preinstall": "node -e \"const major=+process.versions.node.split('.')[0]; if(major<24){console.error('\\nECAP frontend requires Node 24+. Run: cd frontend && nvm use && npm install\\n'); process.exit(1)}\"",
     "dev": "node ./node_modules/next/dist/bin/next dev",
     "build": "node ./node_modules/next/dist/bin/next build",
     "start": "node ./node_modules/next/dist/bin/next start",
