@@ -22,6 +22,7 @@ async function persistMailResults(results: NonNullable<Awaited<ReturnType<typeof
 export async function sendReportConfirmation(report: Report): Promise<void> {
   const results = await mail.sendReportSubmitted(report);
   await persistMailResults(results);
+  console.info(`[ECAP email] Sent ${results.length} report submission email(s) for ${report.referenceNumber}`);
 }
 
 export async function sendStatusUpdate(report: Report): Promise<void> {
