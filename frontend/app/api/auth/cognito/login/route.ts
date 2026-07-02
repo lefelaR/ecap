@@ -3,8 +3,7 @@ import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { cognitoConfig, isCognitoConfigured } from '@/lib/cognito';
 import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
 import { cognitoPayloadToSessionUser } from '@/services/cognito-session';
-import { getApiUrl, isApiConfigured } from '@/services/lambda-api';
-import { forwardUpstreamCookies } from '@/services/lambda-proxy';
+import { getApiUrl, isApiConfigured } from '@/services/api-config';
 
 export async function POST(request: Request) {
   if (!isCognitoConfigured()) {
@@ -25,20 +24,20 @@ export async function POST(request: Request) {
     const data = (await upstream.json()) as {
       error?: string;
       user?: ReturnType<typeof cognitoPayloadToSessionUser>;
+      idToken?: string;
     };
 
     if (!upstream.ok) {
       return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
     }
 
-    if (!data.user) {
+    if (!data.user || !data.idToken) {
       return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
     }
 
-    const sessionId = await establishSession(data.user);
+    const sessionId = await establishSession(data.user, data.idToken);
     const response = NextResponse.json({ user: data.user });
     response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
-    forwardUpstreamCookies(response, upstream);
     return response;
   }
 
@@ -64,7 +63,7 @@ export async function POST(request: Request) {
 
     const payload = await verifier.verify(idToken);
     const user = cognitoPayloadToSessionUser(payload);
-    const sessionId = await establishSession(user);
+    const sessionId = await establishSession(user, idToken);
     const response = NextResponse.json({ user });
     response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
     return response;

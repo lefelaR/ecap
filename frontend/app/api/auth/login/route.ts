@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isApiConfigured } from '@/services/lambda-api';
+import { isApiConfigured } from '@/services/api-config';
 import { proxyToLambda } from '@/services/lambda-proxy';
 import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
 import { getAuthorityById } from '@/services/store';

@@ -1,22 +1,28 @@
 import { cookies } from 'next/headers';
+import { SESSION_COOKIE } from '@/lib/session-cookie';
+import { getSessionById } from '@/services/session-store';
+import { getApiUrl } from './api-config';
 
-export function getApiUrl(): string {
-  const url = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (!url) {
-    throw new Error('NEXT_PUBLIC_API_URL is not configured.');
-  }
-  return url.replace(/\/$/, '');
-}
+export { getApiUrl, isApiConfigured } from './api-config';
 
-export function isApiConfigured(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_API_URL?.trim());
-}
-
-export function buildCookieHeader(): string {
-  return cookies()
+export async function buildCookieHeader(): Promise<string> {
+  const parts = cookies()
     .getAll()
-    .map((entry) => `${entry.name}=${entry.value}`)
-    .join('; ');
+    .map((entry) => `${entry.name}=${entry.value}`);
+
+  const sessionId = cookies().get(SESSION_COOKIE)?.value;
+  if (sessionId && !parts.some((part) => part.startsWith(`${SESSION_COOKIE}=`))) {
+    parts.push(`${SESSION_COOKIE}=${sessionId}`);
+  }
+
+  if (!parts.some((part) => part.startsWith('cognito_id_token='))) {
+    const record = sessionId ? await getSessionById(sessionId) : null;
+    if (record?.cognitoIdToken) {
+      parts.push(`cognito_id_token=${record.cognitoIdToken}`);
+    }
+  }
+
+  return parts.join('; ');
 }
 
 export async function lambdaFetch(path: string, init: RequestInit = {}): Promise<Response> {
@@ -24,7 +30,7 @@ export async function lambdaFetch(path: string, init: RequestInit = {}): Promise
   const headers = new Headers(init.headers);
 
   if (!headers.has('cookie')) {
-    const cookieHeader = buildCookieHeader();
+    const cookieHeader = await buildCookieHeader();
     if (cookieHeader) {
       headers.set('cookie', cookieHeader);
     }
