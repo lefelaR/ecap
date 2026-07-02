@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getApiUrl } from './lambda-api';
 
-function applyUpstreamCookies(response: NextResponse, upstream: Response): void {
+export function forwardUpstreamCookies(response: NextResponse, upstream: Response): void {
   const setCookies =
     typeof upstream.headers.getSetCookie === 'function'
       ? upstream.headers.getSetCookie()
@@ -47,6 +47,6 @@ export async function proxyToLambda(request: Request, path: string): Promise<Nex
     },
   });
 
-  applyUpstreamCookies(response, upstream);
+  forwardUpstreamCookies(response, upstream);
   return response;
 }

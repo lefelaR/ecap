@@ -3,8 +3,8 @@ import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { cognitoConfig, isCognitoConfigured } from '@/lib/cognito';
 import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
 import { cognitoPayloadToSessionUser } from '@/services/cognito-session';
-import { isApiConfigured } from '@/services/lambda-api';
-import { proxyToLambda } from '@/services/lambda-proxy';
+import { getApiUrl, isApiConfigured } from '@/services/lambda-api';
+import { forwardUpstreamCookies } from '@/services/lambda-proxy';
 
 export async function POST(request: Request) {
   if (!isCognitoConfigured()) {
@@ -12,7 +12,34 @@ export async function POST(request: Request) {
   }
 
   if (isApiConfigured()) {
-    return proxyToLambda(request, '/auth/cognito/login');
+    const upstream = await fetch(`${getApiUrl()}/auth/cognito/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(request.headers.get('cookie') ? { cookie: request.headers.get('cookie')! } : {}),
+      },
+      body: await request.text(),
+      cache: 'no-store',
+    });
+
+    const data = (await upstream.json()) as {
+      error?: string;
+      user?: ReturnType<typeof cognitoPayloadToSessionUser>;
+    };
+
+    if (!upstream.ok) {
+      return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
+    }
+
+    if (!data.user) {
+      return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
+    }
+
+    const sessionId = await establishSession(data.user);
+    const response = NextResponse.json({ user: data.user });
+    response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
+    forwardUpstreamCookies(response, upstream);
+    return response;
   }
 
   const body = (await request.json()) as {

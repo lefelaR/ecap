@@ -28,38 +28,13 @@ export async function destroySession(): Promise<void> {
   }
 }
 
-export async function getSession(): Promise<SessionUser | null> {
-  if (isApiConfigured()) {
-    const cookieHeader = cookies()
-      .getAll()
-      .map((entry) => `${entry.name}=${entry.value}`)
-      .join('; ');
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL!.replace(/\/$/, '');
-    const response = await fetch(`${apiUrl}/auth/session`, {
-      headers: cookieHeader ? { cookie: cookieHeader } : undefined,
-      cache: 'no-store',
-    });
-
-    if (response.status === 401) {
-      return null;
-    }
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const body = (await response.json()) as { authenticated?: boolean; user?: SessionUser };
-    return body.authenticated && body.user ? body.user : null;
-  }
-
+async function resolveLocalSession(): Promise<SessionUser | null> {
   const sessionId = cookies().get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
   const record = await getSessionById(sessionId);
   if (record) return record.user;
 
-  // Legacy cookie stored an authority id directly before server-side sessions.
   const legacyAuthority = await getAuthorityById(sessionId);
   if (legacyAuthority) {
     return {
@@ -71,6 +46,39 @@ export async function getSession(): Promise<SessionUser | null> {
       canViewAnonymousCrime: legacyAuthority.canViewAnonymousCrime,
       authSource: 'authority',
     };
+  }
+
+  return null;
+}
+
+async function resolveRemoteSession(): Promise<SessionUser | null> {
+  const cookieHeader = cookies()
+    .getAll()
+    .map((entry) => `${entry.name}=${entry.value}`)
+    .join('; ');
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL!.replace(/\/$/, '');
+  const response = await fetch(`${apiUrl}/auth/session`, {
+    headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const body = (await response.json()) as { authenticated?: boolean; user?: SessionUser };
+  return body.authenticated && body.user ? body.user : null;
+}
+
+export async function getSession(): Promise<SessionUser | null> {
+  const localSession = await resolveLocalSession();
+  if (localSession) {
+    return localSession;
+  }
+
+  if (isApiConfigured()) {
+    return resolveRemoteSession();
   }
 
   return null;
