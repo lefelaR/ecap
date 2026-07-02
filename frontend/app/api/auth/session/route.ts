@@ -3,8 +3,8 @@ import { getSession } from '@/services/auth';
 
 export async function GET() {
   const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
-  }
-  return NextResponse.json({ authenticated: true, user: session });
+
+  return NextResponse.json(
+    session ? { authenticated: true, user: session } : { authenticated: false, user: null },
+  );
 }

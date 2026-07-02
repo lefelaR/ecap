@@ -1,10 +1,6 @@
 import type { Report } from '@/lib/types';
 import { HttpService, http } from './http';
 
-function useRemoteApi(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_API_URL?.trim());
-}
-
 async function parseReportResponse(response: Response): Promise<Report> {
   const body = (await response.json()) as Report & { error?: string };
   if (!response.ok) {
@@ -14,7 +10,7 @@ async function parseReportResponse(response: Response): Promise<Report> {
 }
 
 export async function createReport(formData: FormData): Promise<Report> {
-  if (useRemoteApi()) {
+  if (process.env.NEXT_PUBLIC_API_URL?.trim()) {
     const { data } = await http.post<Report>('/reports', formData);
     return data;
   }

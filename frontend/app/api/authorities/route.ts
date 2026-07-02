@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/services/auth';
-import { readData, writeData } from '@/services/store';
+import { readAuthorities, writeAuthorities } from '@/services/store';
 import type { Authority, AuthorityType } from '@/lib/types';
 
 export async function GET() {
@@ -9,8 +9,8 @@ export async function GET() {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
   }
 
-  const data = await readData();
-  return NextResponse.json(data.authorities);
+  const authorities = await readAuthorities();
+  return NextResponse.json(authorities);
 }
 
 export async function POST(request: Request) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Name, email, and type are required.' }, { status: 400 });
   }
 
-  const data = await readData();
+  const authorities = await readAuthorities();
   const authority: Authority = {
     id: `auth-${Date.now()}`,
     name: body.name,
@@ -42,8 +42,7 @@ export async function POST(request: Request) {
     canViewAnonymousCrime: body.type === 'SAPS' || body.type === 'JMPD' || body.type === 'Application Admin',
   };
 
-  data.authorities = [authority, ...data.authorities];
-  await writeData(data);
+  await writeAuthorities([authority, ...authorities]);
 
   return NextResponse.json(authority, { status: 201 });
 }

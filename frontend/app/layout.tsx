@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 import { Roboto } from 'next/font/google';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/fontawesome-free/5.0.2/css/all.css';
 import './globals.css';
 import { AppToaster } from '@/components/atoms/AppToaster';
 import { ConditionalTopNav } from '@/components/organisms/ConditionalTopNav';
+import { PageLoadingProvider } from '@/components/organisms/PageLoadingProvider';
 import { SessionProvider } from '@/components/organisms/SessionProvider';
 
 const roboto = Roboto({
@@ -24,9 +26,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className={roboto.className}>
         <SessionProvider>
-          <AppToaster />
-          <ConditionalTopNav />
-          {children}
+          <Suspense fallback={null}>
+            <PageLoadingProvider>
+              <AppToaster />
+              <ConditionalTopNav />
+              {children}
+            </PageLoadingProvider>
+          </Suspense>
         </SessionProvider>
       </body>
     </html>

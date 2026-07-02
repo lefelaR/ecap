@@ -55,12 +55,6 @@ export interface EmailLog {
   sentAt: string;
 }
 
-export interface EcapData {
-  reports: Report[];
-  authorities: Authority[];
-  emails: EmailLog[];
-}
-
 export interface PublicStats {
   totalReports: number;
   openReports: number;
