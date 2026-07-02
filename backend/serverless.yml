@@ -2,6 +2,8 @@ service: ecap-api
 
 frameworkVersion: '3'
 
+useDotenv: true
+
 plugins:
   - serverless-esbuild
   - serverless-offline
@@ -54,6 +56,19 @@ provider:
     COGNITO_CLIENT_ID: !Ref EcapUserPoolClient
     SESSION_COOKIE_NAME: ecap_session
     SESSION_TTL_HOURS: '8'
+    USE_MAILPIT: ${env:USE_MAILPIT, 'false'}
+    SMTP_HOST: ${env:SMTP_HOST, ''}
+    SMTP_PORT: ${env:SMTP_PORT, '587'}
+    SMTP_SECURE: ${env:SMTP_SECURE, 'false'}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASS: ${env:SMTP_PASS, ''}
+    SMTP_FROM: ${env:SMTP_FROM, 'ECAP <noreply@ecap.local>'}
+    ECAP_ADMIN_EMAIL: ${env:ECAP_ADMIN_EMAIL, 'rakgew@gmail.com'}
+    ECAP_ROADS_EMAIL: ${env:ECAP_ROADS_EMAIL, 'roads@ecap.local'}
+    ECAP_WATER_EMAIL: ${env:ECAP_WATER_EMAIL, 'water@ecap.local'}
+    ECAP_WASTE_EMAIL: ${env:ECAP_WASTE_EMAIL, 'waste@ecap.local'}
+    ECAP_JMPD_EMAIL: ${env:ECAP_JMPD_EMAIL, 'jmpd@ecap.local'}
+    ECAP_SAPS_EMAIL: ${env:ECAP_SAPS_EMAIL, 'saps@ecap.local'}
   iam:
     role:
       statements:
@@ -221,4 +236,3 @@ functions:
 resources:
   - ${file(./cloudformation/dynamodb-tables.yml)}
   - ${file(./cloudformation/cognito-user-pool.yml)}
-  - ${file(./cloudformation/api-outputs.yml)}

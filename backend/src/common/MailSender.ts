@@ -1,32 +1,24 @@
 import nodemailer from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
-
-const ECAP_MAIL_FROM = process.env.SMTP_FROM ?? 'ECAP <noreply@ecap.local>';
-const MAILPIT_WEB_URL = process.env.MAILPIT_WEB_URL ?? 'http://localhost:8025';
+import {
+  ECAP_MAIL_FROM,
+  getSmtpTransportOptions,
+  mailDeliveryLabel,
+  shouldDeliverMail,
+} from '../config/mailTransport';
 
 let transporter: nodemailer.Transporter | null = null;
 
-function shouldUseMailpit(): boolean {
-  if (process.env.USE_MAILPIT === 'false') return false;
-  if (process.env.USE_MAILPIT === 'true') return true;
-  return process.env.NODE_ENV === 'development';
-}
-
 function getTransporter(): nodemailer.Transporter {
   if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST ?? 'localhost',
-      port: Number(process.env.SMTP_PORT ?? 1025),
-      secure: process.env.SMTP_SECURE === 'true',
-      ignoreTLS: process.env.SMTP_SECURE !== 'true',
-    });
+    transporter = nodemailer.createTransport(getSmtpTransportOptions());
   }
   return transporter;
 }
 
 export class MailSender {
   static isEnabled(): boolean {
-    return shouldUseMailpit();
+    return shouldDeliverMail();
   }
 
   static async send(payload: { to: string; subject: string; text: string; html?: string }): Promise<void> {
@@ -44,6 +36,6 @@ export class MailSender {
     };
 
     await getTransporter().sendMail(message);
-    console.info(`[ECAP email] Sent to Mailpit (${MAILPIT_WEB_URL}) → ${payload.to} | ${payload.subject}`);
+    console.info(`[ECAP email] Sent via ${mailDeliveryLabel()} → ${payload.to} | ${payload.subject}`);
   }
 }
