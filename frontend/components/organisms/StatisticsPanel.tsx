@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { PublicStats } from '../../lib/types';
-import { HttpService, http } from '../../services/http';
+import type { PublicStats } from '@/lib/types';
+import { HttpService, http } from '@/services/http';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { StatTile } from '../atoms/StatTile';
 import { CategoryBreakdown } from '../molecules/CategoryBreakdown';

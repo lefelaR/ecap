@@ -7,6 +7,7 @@ interface ActionCardProps {
   href: string;
   buttonLabel: string;
   buttonClass?: string;
+  disabled?: boolean;
   children?: ReactNode;
 }
 
@@ -16,6 +17,7 @@ export function ActionCard({
   href,
   buttonLabel,
   buttonClass = 'btn btn-outline-primary',
+  disabled = false,
 }: ActionCardProps) {
   return (
     <div className="col">
@@ -23,9 +25,15 @@ export function ActionCard({
         <div className="card-body">
           <h2 className="card-title h5">{title}</h2>
           <p className="card-text">{description}</p>
-          <Link href={href} className={buttonClass}>
-            {buttonLabel}
-          </Link>
+          {disabled ? (
+            <button type="button" className={buttonClass} disabled>
+              {buttonLabel}
+            </button>
+          ) : (
+            <Link href={href} className={buttonClass}>
+              {buttonLabel}
+            </Link>
+          )}
         </div>
       </div>
     </div>

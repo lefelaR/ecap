@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 interface AuthFormLinksProps {
-  mode: 'login' | 'register' | 'forgot-password' | 'reset-password';
+  mode: 'login' | 'register' | 'confirm' | 'forgot-password' | 'reset-password';
 }
 
 export function AuthFormLinks({ mode }: AuthFormLinksProps) {
@@ -15,12 +15,25 @@ export function AuthFormLinks({ mode }: AuthFormLinksProps) {
           <p className="mb-0">
             Don&apos;t have an account? <Link href="/authentication/register">Register</Link>
           </p>
+          <p className="mb-0 mt-1">
+            Need to verify your email? <Link href="/authentication/confirm">Confirm account</Link>
+          </p>
         </>
       )}
       {mode === 'register' && (
         <p className="mb-0">
           Already have an account? <Link href="/authentication/login">Sign in</Link>
         </p>
+      )}
+      {mode === 'confirm' && (
+        <>
+          <p className="mb-1">
+            Already confirmed? <Link href="/authentication/login">Sign in</Link>
+          </p>
+          <p className="mb-0">
+            Need an account? <Link href="/authentication/register">Register</Link>
+          </p>
+        </>
       )}
       {mode === 'forgot-password' && (
         <>

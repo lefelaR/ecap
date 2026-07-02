@@ -1,0 +1,66 @@
+Resources:
+  EcapUserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: ${self:service}-${self:provider.stage}-users
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: name
+          Required: true
+          Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      UserPoolTags:
+        Application: ECAP
+        Stage: ${self:provider.stage}
+        ManagedBy: Serverless
+
+  EcapUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ${self:service}-${self:provider.stage}-web-client
+      UserPoolId: !Ref EcapUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders:
+        - COGNITO
+
+Outputs:
+  CognitoUserPoolId:
+    Description: Cognito user pool ID for ECAP authentication
+    Value: !Ref EcapUserPool
+    Export:
+      Name: ${self:service}-${self:provider.stage}-CognitoUserPoolId
+
+  CognitoUserPoolClientId:
+    Description: Cognito app client ID for the ECAP web frontend
+    Value: !Ref EcapUserPoolClient
+    Export:
+      Name: ${self:service}-${self:provider.stage}-CognitoUserPoolClientId
+
+  CognitoUserPoolArn:
+    Description: ARN of the ECAP Cognito user pool
+    Value: !GetAtt EcapUserPool.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-CognitoUserPoolArn

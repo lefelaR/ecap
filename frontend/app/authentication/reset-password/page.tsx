@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { CognitoResetPasswordForm } from '../../../components/organisms/CognitoResetPasswordForm';
-import { AuthenticationTemplate } from '../../../components/templates/AuthenticationTemplate';
+import { CognitoResetPasswordForm } from '@/components/organisms/CognitoResetPasswordForm';
+import { AuthenticationTemplate } from '@/components/templates/AuthenticationTemplate';
 
 export default function ResetPasswordPage() {
   return (

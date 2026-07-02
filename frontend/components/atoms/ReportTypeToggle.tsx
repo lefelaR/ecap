@@ -1,4 +1,4 @@
-import type { ReportType } from '../../lib/types';
+import type { ReportType } from '@/lib/types';
 
 interface ReportTypeToggleProps {
   value: ReportType;

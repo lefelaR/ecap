@@ -1,5 +1,5 @@
-import { CognitoForgotPasswordForm } from '../../../components/organisms/CognitoForgotPasswordForm';
-import { AuthenticationTemplate } from '../../../components/templates/AuthenticationTemplate';
+import { CognitoForgotPasswordForm } from '@/components/organisms/CognitoForgotPasswordForm';
+import { AuthenticationTemplate } from '@/components/templates/AuthenticationTemplate';
 
 export default function ForgotPasswordPage() {
   return (

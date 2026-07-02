@@ -36,8 +36,10 @@ Table definitions live in `cloudformation/dynamodb-tables.yml`. They are deploye
 | AuthoritiesTable | Councillors, SAPS, JMPD, admins |
 | EmailNotificationsTable | Confirmation and status-update email log |
 | UserSessionsTable | Authenticated authority sessions (TTL) |
+| EcapUserPool | Cognito user pool for citizen/authority sign-in |
+| EcapUserPoolClient | Public web app client (no secret) |
 
-CloudFormation assigns each table a unique physical name per stack. Lambda functions receive the resolved names via environment variables (`!Ref`). Tables use `DeletionPolicy: Retain` so data survives stack removal. Stack outputs export table names and ARNs (see CloudFormation console or `serverless info` after deploy).
+CloudFormation assigns each table a unique physical name per stack. Lambda functions receive the resolved names via environment variables (`!Ref`). Cognito IDs are injected as `COGNITO_USER_POOL_ID` and `COGNITO_CLIENT_ID`. Stack outputs export table names, Cognito IDs, and ARNs (see CloudFormation console or `npm run info` after deploy).
 
 ## Getting started
 
@@ -75,17 +77,9 @@ npm run deploy:dev
 npm run deploy -- --stage dev --region eu-central-1
 ```
 
-After deploy:
-
-```bash
-serverless info --stage dev
-```
-
-Copy the table names from the stack outputs into `.env` before running the seed script.
+After deploy (or `npm run info`), the CLI prints stack outputs and updates `backend/.env` and `frontend/.env` with table names, Cognito pool/client IDs, and other values.
 
 ### Seed demo data (after deploy)
-
-Copy table names from `serverless info --stage dev` into `.env`, then:
 
 ```bash
 npm run seed
@@ -130,9 +124,14 @@ Mirrors the Next.js frontend API:
 | GET | `/reports/lookup` | Public status lookup by reference |
 | GET | `/authorities` | List authorities (admin) |
 | POST | `/authorities` | Register authority (admin) |
-| POST | `/auth/login` | Create session |
+| POST | `/auth/login` | Create authority session |
 | POST | `/auth/logout` | Destroy session |
 | GET | `/auth/session` | Current session user |
+| POST | `/auth/cognito/login` | Cognito sign-in |
+| POST | `/auth/cognito/register` | Cognito sign-up |
+| POST | `/auth/cognito/forgot-password` | Send password reset code |
+| POST | `/auth/cognito/confirm` | Confirm new account |
+| POST | `/auth/cognito/resend-confirmation` | Resend verification code |
 | GET | `/stats` | Public statistics |
 
 ## Connect the Next.js frontend
@@ -141,7 +140,12 @@ Set the API base URL in the frontend `.env` (region must match `custom.deploymen
 
 ```env
 NEXT_PUBLIC_API_URL=https://your-api-id.execute-api.eu-central-1.amazonaws.com
+NEXT_PUBLIC_COGNITO_USER_POOL_ID=eu-central-1_xxxxxxxxx
+NEXT_PUBLIC_COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_COGNITO_REGION=eu-central-1
 ```
+
+`npm run deploy:dev` writes the Cognito values into `frontend/.env` automatically from stack outputs.
 
 Then proxy or update frontend `fetch` calls from `/api/*` to `${NEXT_PUBLIC_API_URL}/*`.
 

@@ -1,4 +1,4 @@
-import type { Authority } from '../../lib/types';
+import type { Authority } from '@/lib/types';
 
 interface AuthorityCardProps {
   authority: Authority;

@@ -1,6 +1,6 @@
-import { StatisticsPanel } from '../../components/organisms/StatisticsPanel';
-import { BackHomeLink } from '../../components/atoms/BackHomeLink';
-import { PageTemplate } from '../../components/templates/PageTemplate';
+import { StatisticsPanel } from '@/components/organisms/StatisticsPanel';
+import { BackHomeLink } from '@/components/atoms/BackHomeLink';
+import { PageTemplate } from '@/components/templates/PageTemplate';
 
 export default function StatisticsPage() {
   return (

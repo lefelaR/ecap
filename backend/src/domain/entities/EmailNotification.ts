@@ -1,5 +1,13 @@
 import type { EmailNotificationRecord } from '../types';
 import type { ServiceReport } from './ServiceReport';
+import {
+  canEmailReporter,
+  getAdminNotificationEmail,
+  getDepartmentLabel,
+  getDepartmentNotificationEmail,
+  reportDetailLines,
+  reporterContactLines,
+} from '../../config/mailRecipients';
 
 export class EmailNotification {
   private constructor(private readonly record: EmailNotificationRecord) {}
@@ -7,7 +15,7 @@ export class EmailNotification {
   static confirmation(report: ServiceReport): EmailNotification {
     const data = report.toJSON();
 
-    if (!data.contactEmail || data.anonymous) {
+    if (!canEmailReporter(data)) {
       throw new Error('SKIP_EMAIL');
     }
 
@@ -16,10 +24,7 @@ export class EmailNotification {
       '',
       'Your report has been received on the Electronic Councillor Action Platform.',
       '',
-      `Reference number: ${data.referenceNumber}`,
-      `Category: ${data.category}`,
-      `Ward: ${data.ward}`,
-      `Status: ${data.status}`,
+      ...reportDetailLines(data),
       '',
       'You can check the status of your issue at any time using your reference number.',
       '',
@@ -34,10 +39,55 @@ export class EmailNotification {
     );
   }
 
+  static adminAlert(report: ServiceReport): EmailNotification {
+    const data = report.toJSON();
+
+    const body = [
+      'Hello,',
+      '',
+      'A new report has been submitted on the Electronic Councillor Action Platform.',
+      '',
+      ...reportDetailLines(data),
+      ...reporterContactLines(data),
+      '',
+      'Review this report in the ECAP dashboard.',
+    ].join('\n');
+
+    return EmailNotification.build(
+      getAdminNotificationEmail(),
+      `ECAP Admin Alert – New report ${data.referenceNumber}`,
+      body,
+      data.referenceNumber,
+    );
+  }
+
+  static departmentAlert(report: ServiceReport): EmailNotification {
+    const data = report.toJSON();
+    const department = getDepartmentLabel(data);
+
+    const body = [
+      'Hello,',
+      '',
+      'A new report has been routed to your department on the Electronic Councillor Action Platform.',
+      '',
+      ...reportDetailLines(data),
+      data.anonymous ? 'Reporter: Anonymous reporter' : `Reporter: ${data.contactName || data.contactEmail}`,
+      '',
+      'Please review and action this report through ECAP.',
+    ].join('\n');
+
+    return EmailNotification.build(
+      getDepartmentNotificationEmail(data),
+      `ECAP Department Alert – ${department} – ${data.referenceNumber}`,
+      body,
+      data.referenceNumber,
+    );
+  }
+
   static statusUpdate(report: ServiceReport): EmailNotification {
     const data = report.toJSON();
 
-    if (!data.contactEmail || data.anonymous) {
+    if (!canEmailReporter(data)) {
       throw new Error('SKIP_EMAIL');
     }
 

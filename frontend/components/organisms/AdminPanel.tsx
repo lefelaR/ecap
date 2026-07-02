@@ -2,59 +2,71 @@
 
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
-import type { Authority, SessionUser } from '../../lib/types';
-import { HttpService, http } from '../../services/http';
+import type { Authority } from '@/lib/types';
+import { appApi } from '@/services/app-api';
 import { AlertMessage } from '../atoms/AlertMessage';
-import { BackHomeLink } from '../atoms/BackHomeLink';
 import { AuthorityCard } from '../molecules/AuthorityCard';
 import { AuthorityRegistrationForm } from '../molecules/AuthorityRegistrationForm';
+import { useSession } from './SessionProvider';
 
 export function AdminPanel() {
   const router = useRouter();
-  const [session, setSession] = useState<SessionUser | null>(null);
+  const { session, ready } = useSession();
   const [authorities, setAuthorities] = useState<Authority[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    http
-      .get<{ user: SessionUser }>('/auth/session')
-      .then(({ data }) => {
-        if (data.user.type !== 'Application Admin') {
-          router.push('/authentication/login?redirect=/admin');
-          return;
-        }
-        setSession(data.user);
-        return http.get<Authority[]>('/authorities').then(({ data: list }) => list);
+    if (!ready) return;
+
+    if (!session || session.type !== 'Application Admin') {
+      router.push('/authentication/login?redirect=/admin/authorities');
+      setLoading(false);
+      return;
+    }
+
+    fetch('/api/authorities', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Failed to load authorities.');
+        return response.json() as Promise<Authority[]>;
       })
-      .then((data) => {
-        if (Array.isArray(data)) setAuthorities(data);
-      })
-      .catch(() => router.push('/authentication/login?redirect=/admin'))
+      .then(setAuthorities)
+      .catch(() => router.push('/authentication/login?redirect=/admin/authorities'))
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [ready, router, session]);
 
   async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
 
     try {
-      const { data } = await http.post<Authority>('/authorities', {
-        name: form.get('name'),
-        email: form.get('email'),
-        type: form.get('type'),
-        ward: form.get('ward'),
-        municipality: form.get('municipality'),
+      const response = await fetch('/api/authorities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: form.get('name'),
+          email: form.get('email'),
+          type: form.get('type'),
+          ward: form.get('ward'),
+          municipality: form.get('municipality'),
+        }),
       });
-      setAuthorities((prev) => [data, ...prev]);
-      setMessage(`Registered ${data.name} as ${data.type}.`);
+
+      const body = (await response.json()) as Authority & { error?: string };
+      if (!response.ok) {
+        throw new Error(body.error ?? 'Registration failed.');
+      }
+
+      setAuthorities((prev) => [body, ...prev]);
+      setMessage(`Registered ${body.name} as ${body.type}.`);
       event.currentTarget.reset();
     } catch (err) {
-      setMessage(HttpService.getErrorMessage(err, 'Registration failed.'));
+      setMessage(err instanceof Error ? err.message : 'Registration failed.');
     }
   }
 
-  if (loading) return <p>Loading admin panel…</p>;
+  if (!ready || loading) return <p>Loading admin panel…</p>;
   if (!session) return null;
 
   return (
@@ -68,10 +80,6 @@ export function AdminPanel() {
           <AuthorityCard key={authority.id} authority={authority} />
         ))}
       </section>
-
-      <div className="mt-4">
-        <BackHomeLink className="btn btn-secondary" />
-      </div>
     </>
   );
 }

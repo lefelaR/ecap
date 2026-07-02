@@ -29,6 +29,18 @@ export class Environment {
     return process.env.AWS_REGION ?? getDeploymentRegion();
   }
 
+  static get cognitoUserPoolId(): string {
+    return this.require('COGNITO_USER_POOL_ID');
+  }
+
+  static get cognitoClientId(): string {
+    return this.require('COGNITO_CLIENT_ID');
+  }
+
+  static isCognitoConfigured(): boolean {
+    return Boolean(process.env.COGNITO_USER_POOL_ID && process.env.COGNITO_CLIENT_ID);
+  }
+
   private static require(key: string): string {
     const value = process.env[key];
     if (!value) {

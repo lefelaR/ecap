@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { COGNITO_ID_TOKEN_COOKIE } from '../config/cognito';
 import { Environment } from '../config/environment';
 
 export class RequestContext {
@@ -12,15 +13,22 @@ export class RequestContext {
     return this.event.pathParameters?.id;
   }
 
-  get sessionId(): string | null {
+  getCookie(name: string): string | null {
     const cookieHeader = this.event.headers.cookie ?? this.event.headers.Cookie;
     if (!cookieHeader) return null;
 
-    const cookieName = Environment.sessionCookieName;
-    const match = cookieHeader.split(';').find((part) => part.trim().startsWith(`${cookieName}=`));
+    const match = cookieHeader.split(';').find((part) => part.trim().startsWith(`${name}=`));
     if (!match) return null;
 
-    return match.split('=')[1]?.trim() ?? null;
+    return match.split('=').slice(1).join('=').trim() ?? null;
+  }
+
+  get sessionId(): string | null {
+    return this.getCookie(Environment.sessionCookieName);
+  }
+
+  get cognitoIdToken(): string | null {
+    return this.getCookie(COGNITO_ID_TOKEN_COOKIE);
   }
 
   async parseJsonBody<T>(): Promise<T> {

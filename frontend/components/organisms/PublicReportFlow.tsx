@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { FormEvent, useState } from 'react';
-import type { ReportCategory, ReportType } from '../../lib/types';
-import { CATEGORY_LABELS, CATEGORY_SERVICE_PROVIDERS } from '../../lib/labels';
-import { HttpService, http } from '../../services/http';
+import type { ReportCategory, ReportType } from '@/lib/types';
+import { CATEGORY_LABELS, CATEGORY_SERVICE_PROVIDERS } from '@/lib/labels';
+import { createReport, getReportErrorMessage } from '@/services/reports';
 import { AlertMessage } from '../atoms/AlertMessage';
 import { FormField } from '../atoms/FormField';
 import { PageBanner } from '../atoms/PageBanner';
@@ -69,11 +69,11 @@ export function PublicReportFlow() {
     formData.set('location', 'Ward 23, City of Johannesburg');
 
     try {
-      const { data } = await http.post<{ referenceNumber: string }>('/reports', formData);
-      setResult({ referenceNumber: data.referenceNumber });
+      const report = await createReport(formData);
+      setResult({ referenceNumber: report.referenceNumber });
       form.reset();
     } catch (err) {
-      setError(HttpService.getErrorMessage(err, 'Failed to submit report.'));
+      setError(getReportErrorMessage(err, 'Failed to submit report.'));
     } finally {
       setSubmitting(false);
     }
