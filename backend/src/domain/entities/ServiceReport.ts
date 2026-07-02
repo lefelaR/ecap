@@ -56,6 +56,10 @@ export class ServiceReport {
       return true;
     }
 
+    if (session.authSource === 'cognito' && session.email) {
+      return this.record.contactEmail.toLowerCase() === session.email.toLowerCase();
+    }
+
     if (this.record.type === 'crime') {
       if (this.record.anonymous) {
         return session.canViewAnonymousCrime;

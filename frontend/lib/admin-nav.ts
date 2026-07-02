@@ -2,6 +2,7 @@ import type { SessionUser } from '@/lib/types';
 import {
   ADMIN_CONTROL_PATH,
   HOME_PATH,
+  ISSUES_PATH,
   REPORT_MANAGEMENT_PATH,
   SYSTEM_DASHBOARD_PATH,
 } from '@/lib/post-login-redirect';
@@ -29,6 +30,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: SYSTEM_DASHBOARD_PATH,
     label: 'Dashboard',
     icon: 'fa-tachometer-alt',
+    section: 'administration',
+  },
+  {
+    id: 'issues',
+    href: ISSUES_PATH,
+    label: 'Issues',
+    icon: 'fa-list-alt',
     section: 'administration',
   },
   {

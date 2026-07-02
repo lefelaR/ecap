@@ -84,8 +84,15 @@ export async function getSession(): Promise<SessionUser | null> {
   return null;
 }
 
-export function canAccessReport(session: SessionUser, report: { type: string; ward: string; anonymous: boolean }): boolean {
+export function canAccessReport(
+  session: SessionUser,
+  report: { type: string; ward: string; anonymous: boolean; contactEmail?: string },
+): boolean {
   if (session.type === 'Application Admin') return true;
+
+  if (session.authSource === 'cognito' && session.email && report.contactEmail) {
+    return report.contactEmail.toLowerCase() === session.email.toLowerCase();
+  }
 
   if (report.type === 'crime') {
     if (report.anonymous) return session.canViewAnonymousCrime;
