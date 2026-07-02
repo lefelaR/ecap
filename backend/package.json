@@ -29,6 +29,9 @@
     "aws-jwt-verify": "^5.2.1",
     "lambda-multipart-parser": "^1.0.1",
     "nodemailer": "^7.0.13",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-email": "^6.6.5",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -36,6 +39,8 @@
     "@types/aws-lambda": "^8.10.147",
     "@types/node": "^20.14.2",
     "@types/nodemailer": "^6.4.24",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/uuid": "^10.0.0",
     "serverless": "^3.39.0",
     "serverless-esbuild": "^1.54.3",

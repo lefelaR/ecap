@@ -5,7 +5,7 @@ import { UserSessionRepository } from '../repositories/UserSessionRepository';
 import { AuthService } from '../services/AuthService';
 import { AuthorityService } from '../services/AuthorityService';
 import { CognitoService } from '../services/CognitoService';
-import { EmailNotificationService } from '../services/EmailNotificationService';
+import { MailService } from '../services/MailService';
 import { ReportService } from '../services/ReportService';
 import { StatisticsService } from '../services/StatisticsService';
 
@@ -17,8 +17,8 @@ export class ServiceContainer {
   readonly emailRepository = EmailNotificationRepository.getInstance();
   readonly sessionRepository = UserSessionRepository.getInstance();
 
-  readonly emailService = new EmailNotificationService(this.emailRepository);
-  readonly reportService = new ReportService(this.reportRepository, this.emailService);
+  readonly mailService = new MailService(this.emailRepository);
+  readonly reportService = new ReportService(this.reportRepository, this.mailService);
   readonly authorityService = new AuthorityService(this.authorityRepository);
   readonly authService = new AuthService(this.authorityRepository, this.sessionRepository);
   readonly cognitoService = new CognitoService();

@@ -32,6 +32,8 @@ custom:
     target: node20
     platform: node
     concurrency: 10
+    loader:
+      .tsx: tsx
     exclude:
       - '@aws-sdk/client-dynamodb'
       - '@aws-sdk/lib-dynamodb'
@@ -68,7 +70,7 @@ provider:
     ECAP_WATER_EMAIL: ${env:ECAP_WATER_EMAIL, 'water@ecap.local'}
     ECAP_WASTE_EMAIL: ${env:ECAP_WASTE_EMAIL, 'waste@ecap.local'}
     ECAP_JMPD_EMAIL: ${env:ECAP_JMPD_EMAIL, 'jmpd@ecap.local'}
-    ECAP_SAPS_EMAIL: ${env:ECAP_SAPS_EMAIL, 'saps@ecap.local'}
+    APP_URL: ${env:APP_URL, 'http://localhost:3000'}
   iam:
     role:
       statements:
