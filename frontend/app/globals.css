@@ -225,6 +225,21 @@ h6 {
   overflow: hidden;
 }
 
+.ecap-spinner {
+  text-align: center;
+}
+
+.ecap-page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  pointer-events: none;
+  background: var(--ecap-surface);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
 .map-panel {
   padding: 1.5rem;
 }
