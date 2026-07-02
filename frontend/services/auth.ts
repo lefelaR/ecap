@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import type { SessionUser } from '@/lib/types';
 import { getAuthorityById } from './store';
 import { createSession, deleteSession, getSessionById, purgeExpiredSessions } from './session-store';
+import { isApiConfigured } from './lambda-api';
 
 export const SESSION_COOKIE = 'ecap_session';
 export const SESSION_TTL_HOURS = 8;
@@ -28,6 +29,30 @@ export async function destroySession(): Promise<void> {
 }
 
 export async function getSession(): Promise<SessionUser | null> {
+  if (isApiConfigured()) {
+    const cookieHeader = cookies()
+      .getAll()
+      .map((entry) => `${entry.name}=${entry.value}`)
+      .join('; ');
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL!.replace(/\/$/, '');
+    const response = await fetch(`${apiUrl}/auth/session`, {
+      headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+      cache: 'no-store',
+    });
+
+    if (response.status === 401) {
+      return null;
+    }
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const body = (await response.json()) as { authenticated?: boolean; user?: SessionUser };
+    return body.authenticated && body.user ? body.user : null;
+  }
+
   const sessionId = cookies().get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 

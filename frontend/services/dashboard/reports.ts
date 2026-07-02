@@ -1,28 +1,32 @@
 import { NextResponse } from 'next/server';
-import { canAccessReport } from '../auth';
-import { sendStatusUpdate } from '../email';
-import { readData, writeData } from '../store';
-import type { Report, ReportStatus, SessionUser } from '@/lib/types';
+import type { Report, ReportStatus } from '@/lib/types';
+import { lambdaFetch } from '@/services/lambda-api';
 
 export function isReportStatus(value: string): value is ReportStatus {
   return ['Open', 'Under review', 'Resolved', 'Cancelled', 'Duplicate'].includes(value);
 }
 
 export async function listDashboardReports(
-  session: SessionUser,
+  _session: unknown,
   filters: { ward?: string | null; status?: string | null },
 ): Promise<Report[]> {
-  const data = await readData();
-  let reports = data.reports.filter((report) => canAccessReport(session, report));
+  const params = new URLSearchParams();
+  if (filters.ward) params.set('ward', filters.ward);
+  if (filters.status) params.set('status', filters.status);
 
-  if (filters.ward) reports = reports.filter((report) => report.ward === filters.ward);
-  if (filters.status) reports = reports.filter((report) => report.status === filters.status);
+  const query = params.toString();
+  const response = await lambdaFetch(`/reports${query ? `?${query}` : ''}`);
 
-  return reports.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (!response.ok) {
+    const body = (await response.json()) as { error?: string };
+    throw new Error(body.error ?? 'Failed to load reports.');
+  }
+
+  return response.json() as Promise<Report[]>;
 }
 
 export async function updateDashboardReport(
-  session: SessionUser,
+  _session: unknown,
   id: string,
   body: { status?: ReportStatus; notes?: string; expenditure?: number },
 ): Promise<{ report: Report } | { error: NextResponse }> {
@@ -30,30 +34,17 @@ export async function updateDashboardReport(
     return { error: NextResponse.json({ error: 'Invalid status.' }, { status: 400 }) };
   }
 
-  const data = await readData();
-  const index = data.reports.findIndex((entry) => entry.id === id);
-  if (index === -1) {
-    return { error: NextResponse.json({ error: 'Report not found.' }, { status: 404 }) };
+  const response = await lambdaFetch(`/reports/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await response.json()) as Report & { error?: string };
+
+  if (!response.ok) {
+    return { error: NextResponse.json({ error: payload.error ?? 'Update failed.' }, { status: response.status }) };
   }
 
-  const report = data.reports[index];
-  if (!canAccessReport(session, report)) {
-    return { error: NextResponse.json({ error: 'Forbidden.' }, { status: 403 }) };
-  }
-
-  const updated = {
-    ...report,
-    ...body,
-    updatedAt: new Date().toISOString(),
-    resolvedAt: body.status === 'Resolved' ? new Date().toISOString() : report.resolvedAt,
-  };
-
-  data.reports[index] = updated;
-  await writeData(data);
-
-  if (body.status && body.status !== report.status) {
-    await sendStatusUpdate(updated);
-  }
-
-  return { report: updated };
+  return { report: payload };
 }

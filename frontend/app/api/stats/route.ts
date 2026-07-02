@@ -1,9 +1,5 @@
-import { NextResponse } from 'next/server';
-import { readData } from '@/services/store';
-import { computeStats } from '@/services/stats';
+import { proxyToLambda } from '@/services/lambda-proxy';
 
-export async function GET() {
-  const data = await readData();
-  const publicReports = data.reports.filter((report) => !report.anonymous || report.status === 'Resolved');
-  return NextResponse.json(computeStats(publicReports));
+export async function GET(request: Request) {
+  return proxyToLambda(request, '/stats');
 }

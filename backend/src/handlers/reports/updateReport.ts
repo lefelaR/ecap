@@ -3,6 +3,7 @@ import { ApiError } from '../../common/ApiError';
 import { HandlerFactory } from '../../common/HandlerFactory';
 import { HttpResponse } from '../../common/HttpResponse';
 import { RequestContext } from '../../common/RequestContext';
+import { SessionResolver } from '../../common/SessionResolver';
 import { ServiceContainer } from '../../container/ServiceContainer';
 import type { UpdateReportInput } from '../../domain/types';
 
@@ -15,7 +16,7 @@ export const handler = HandlerFactory.create(async (event: APIGatewayProxyEventV
   }
 
   const container = ServiceContainer.getInstance();
-  const session = await container.authService.resolveSession(ctx.sessionId);
+  const session = await SessionResolver.resolve(container, ctx);
 
   if (!session) {
     throw ApiError.unauthorized();

@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import { isApiConfigured } from '@/services/lambda-api';
+import { proxyToLambda } from '@/services/lambda-proxy';
 import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
 import { getAuthorityById } from '@/services/store';
 
 export async function POST(request: Request) {
+  if (isApiConfigured()) {
+    return proxyToLambda(request, '/auth/login');
+  }
+
   const { authorityId } = (await request.json()) as { authorityId?: string };
 
   if (!authorityId) {
