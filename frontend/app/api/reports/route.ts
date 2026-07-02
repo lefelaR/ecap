@@ -84,7 +84,12 @@ export async function POST(request: Request) {
 
   data.reports = [newReport, ...data.reports];
   await writeData(data);
-  await sendReportConfirmation(newReport);
+
+  try {
+    await sendReportConfirmation(newReport);
+  } catch (error) {
+    console.error('[ECAP email] Failed to send report submission emails:', error);
+  }
 
   return NextResponse.json(newReport, { status: 201 });
 }

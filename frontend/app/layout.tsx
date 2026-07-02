@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/fontawesome-free/5.0.2/css/all.css';
 import './globals.css';
 import { AppToaster } from '@/components/atoms/AppToaster';
-import { NavBar } from '@/components/organisms/NavBar';
+import { ConditionalTopNav } from '@/components/organisms/ConditionalTopNav';
 import { SessionProvider } from '@/components/organisms/SessionProvider';
 
 const roboto = Roboto({
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={roboto.className}>
         <SessionProvider>
           <AppToaster />
-          <NavBar />
+          <ConditionalTopNav />
           {children}
         </SessionProvider>
       </body>

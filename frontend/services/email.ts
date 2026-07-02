@@ -1,68 +1,32 @@
 import type { Report } from '@/lib/types';
+import { mail } from '@/lib/mail';
 import { readData, writeData } from './store';
 
-export async function sendReportConfirmation(report: Report): Promise<void> {
-  if (!report.contactEmail || report.anonymous) return;
+async function persistMailResults(results: NonNullable<Awaited<ReturnType<typeof mail.send>>>[]): Promise<void> {
+  if (results.length === 0) return;
 
   const data = await readData();
-  const subject = `ECAP Report Received – ${report.referenceNumber}`;
-  const body = [
-    `Dear ${report.contactName || 'resident'},`,
-    '',
-    'Your report has been received on the Electronic Councillor Action Platform.',
-    '',
-    `Reference number: ${report.referenceNumber}`,
-    `Category: ${report.category}`,
-    `Ward: ${report.ward}`,
-    `Status: ${report.status}`,
-    '',
-    'You can check the status of your issue at any time using your reference number on the ECAP status page.',
-    '',
-    'Thank you for helping improve service delivery in your community.',
-  ].join('\n');
-
-  data.emails.push({
-    id: `email-${Date.now()}`,
-    to: report.contactEmail,
-    subject,
-    body,
-    reportReference: report.referenceNumber,
-    sentAt: new Date().toISOString(),
-  });
-
+  for (const result of results) {
+    data.emails.push({
+      id: result.id,
+      to: result.to,
+      subject: result.subject,
+      body: result.text,
+      reportReference: result.reportReference,
+      sentAt: result.sentAt,
+    });
+  }
   await writeData(data);
-  console.info(`[ECAP email] To: ${report.contactEmail} | ${subject}`);
+}
+
+export async function sendReportConfirmation(report: Report): Promise<void> {
+  const results = await mail.sendReportSubmitted(report);
+  await persistMailResults(results);
+  console.info(`[ECAP email] Sent ${results.length} report submission email(s) for ${report.referenceNumber}`);
 }
 
 export async function sendStatusUpdate(report: Report): Promise<void> {
-  if (!report.contactEmail || report.anonymous) return;
-
-  const data = await readData();
-  const subject = `ECAP Status Update – ${report.referenceNumber}`;
-  const body = [
-    `Dear ${report.contactName || 'resident'},`,
-    '',
-    `Your report ${report.referenceNumber} has been updated.`,
-    '',
-    `Current status: ${report.status}`,
-    report.resolvedAt ? `Resolved on: ${new Date(report.resolvedAt).toLocaleDateString('en-ZA')}` : '',
-    report.expenditure != null ? `Expenditure: R ${report.expenditure.toLocaleString('en-ZA')}` : '',
-    report.notes ? `Notes: ${report.notes}` : '',
-    '',
-    'Visit the ECAP status page to view full details.',
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  data.emails.push({
-    id: `email-${Date.now()}`,
-    to: report.contactEmail,
-    subject,
-    body,
-    reportReference: report.referenceNumber,
-    sentAt: new Date().toISOString(),
-  });
-
-  await writeData(data);
-  console.info(`[ECAP email] To: ${report.contactEmail} | ${subject}`);
+  const result = await mail.send({ type: 'reportStatusUpdate', report });
+  if (!result) return;
+  await persistMailResults([result]);
 }

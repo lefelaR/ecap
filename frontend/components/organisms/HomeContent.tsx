@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ADMIN_CONTROL_PATH, REPORT_DASHBOARD_PATH } from '@/lib/post-login-redirect';
+import { ADMIN_CONTROL_PATH, REPORT_MANAGEMENT_PATH, SYSTEM_DASHBOARD_PATH } from '@/lib/post-login-redirect';
 import { useSession } from './SessionProvider';
 import { ActionCard } from '../atoms/ActionCard';
 
@@ -59,10 +59,18 @@ export function HomeContent() {
             buttonLabel="View Statistics"
           />
           <ActionCard
-            title="Authority dashboard"
-            description="Manage ward reports, resolve issues, mark duplicates, and track expenditure."
-            href={REPORT_DASHBOARD_PATH}
-            buttonLabel="Authority Login"
+            title="System dashboard"
+            description="Your central hub for reporting, statistics, and authority workflows after sign-in."
+            href={SYSTEM_DASHBOARD_PATH}
+            buttonLabel="Open dashboard"
+            buttonClass={isLoggedIn ? 'btn btn-outline-primary' : 'btn btn-secondary'}
+            disabled={!isLoggedIn}
+          />
+          <ActionCard
+            title="Manage reports"
+            description="Review ward reports, resolve issues, mark duplicates, and track expenditure."
+            href={REPORT_MANAGEMENT_PATH}
+            buttonLabel="Report management"
             disabled={!isAuthorityUser}
           />
           <ActionCard

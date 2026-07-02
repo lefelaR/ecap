@@ -5,7 +5,6 @@ import { FormEvent, useEffect, useState } from 'react';
 import type { Authority } from '@/lib/types';
 import { appApi } from '@/services/app-api';
 import { AlertMessage } from '../atoms/AlertMessage';
-import { BackHomeLink } from '../atoms/BackHomeLink';
 import { AuthorityCard } from '../molecules/AuthorityCard';
 import { AuthorityRegistrationForm } from '../molecules/AuthorityRegistrationForm';
 import { useSession } from './SessionProvider';
@@ -81,10 +80,6 @@ export function AdminPanel() {
           <AuthorityCard key={authority.id} authority={authority} />
         ))}
       </section>
-
-      <div className="mt-4">
-        <BackHomeLink className="btn btn-secondary" />
-      </div>
     </>
   );
 }
