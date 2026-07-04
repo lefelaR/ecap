@@ -67,7 +67,7 @@ npm run build
 
 ### Deploy tables and API (CloudFormation + Serverless)
 
-This runs `serverless deploy`, which creates/updates the CloudFormation stack including all four DynamoDB tables and Lambda functions:
+This runs `serverless deploy --verbose`, which streams packaging, upload, and CloudFormation progress while creating/updating the stack:
 
 ```bash
 # default stage: dev; region: custom.deploymentRegion in serverless.yml
@@ -75,6 +75,9 @@ npm run deploy:dev
 
 # or explicitly override stage/region at deploy time
 npm run deploy -- --stage dev --region eu-central-1
+
+# maximum CLI detail (Serverless debug namespaces)
+npm run deploy:debug
 ```
 
 After deploy (or `npm run info`), the CLI prints stack outputs and updates `backend/.env` and `frontend/.env` with table names, Cognito pool/client IDs, and other values.
