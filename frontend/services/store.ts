@@ -75,3 +75,16 @@ export async function getAuthorityById(id: string): Promise<Authority | undefine
   const authorities = await readAuthorities();
   return authorities.find((authority) => authority.id === id);
 }
+
+export async function updateAuthorityProfile(
+  id: string,
+  updates: { name?: string; imageUrl?: string },
+): Promise<Authority | null> {
+  const authorities = await readAuthorities();
+  const index = authorities.findIndex((authority) => authority.id === id);
+  if (index === -1) return null;
+
+  authorities[index] = { ...authorities[index], ...updates };
+  await writeAuthorities(authorities);
+  return authorities[index];
+}

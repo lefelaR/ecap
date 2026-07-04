@@ -44,6 +44,7 @@ async function resolveLocalSession(): Promise<SessionUser | null> {
       ward: legacyAuthority.ward,
       municipality: legacyAuthority.municipality,
       canViewAnonymousCrime: legacyAuthority.canViewAnonymousCrime,
+      imageUrl: legacyAuthority.imageUrl,
       authSource: 'authority',
     };
   }

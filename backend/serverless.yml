@@ -186,6 +186,13 @@ functions:
           path: /auth/session
           method: get
 
+  updateProfile:
+    handler: src/handlers/auth/updateProfile.handler
+    events:
+      - httpApi:
+          path: /auth/profile
+          method: patch
+
   cognitoLogin:
     handler: src/handlers/auth/cognitoLogin.handler
     events:

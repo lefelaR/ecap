@@ -6,6 +6,7 @@ import { AuthService } from '../services/AuthService';
 import { AuthorityService } from '../services/AuthorityService';
 import { CognitoService } from '../services/CognitoService';
 import { MailService } from '../services/MailService';
+import { ProfileService } from '../services/ProfileService';
 import { ReportService } from '../services/ReportService';
 import { StatisticsService } from '../services/StatisticsService';
 
@@ -22,6 +23,7 @@ export class ServiceContainer {
   readonly authorityService = new AuthorityService(this.authorityRepository);
   readonly authService = new AuthService(this.authorityRepository, this.sessionRepository);
   readonly cognitoService = new CognitoService();
+  readonly profileService = new ProfileService(this.authorityRepository, this.cognitoService);
   readonly statisticsService = new StatisticsService(this.reportRepository);
 
   static getInstance(): ServiceContainer {

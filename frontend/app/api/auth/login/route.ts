@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     ward: authority.ward,
     municipality: authority.municipality,
     canViewAnonymousCrime: authority.canViewAnonymousCrime,
+    imageUrl: authority.imageUrl,
     authSource: 'authority',
   });
 

@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import type { SessionUser } from '@/lib/types';
+import { PROFILE_PATH } from '@/lib/post-login-redirect';
 import { UserAvatar } from '@/components/atoms/UserAvatar';
 
 interface DashboardProfileProps {
@@ -7,7 +9,7 @@ interface DashboardProfileProps {
 
 export function DashboardProfile({ session }: DashboardProfileProps) {
   return (
-    <div className="dashboard-profile">
+    <Link href={PROFILE_PATH} className="dashboard-profile dashboard-profile--link">
       <UserAvatar
         name={session.name}
         imageUrl={session.imageUrl}
@@ -18,6 +20,6 @@ export function DashboardProfile({ session }: DashboardProfileProps) {
         {session.authSource === 'cognito' ? 'Citizen account' : session.type}
         {session.ward && session.ward !== 'All' ? ` · ${session.ward}` : ''}
       </p>
-    </div>
+    </Link>
   );
 }

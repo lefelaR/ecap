@@ -83,6 +83,22 @@ export async function deleteSession(sessionId: string): Promise<void> {
   await writeStore(store);
 }
 
+export async function updateSessionUser(
+  sessionId: string,
+  updates: Partial<SessionUser>,
+): Promise<SessionRecord | null> {
+  const store = await readStore();
+  const index = store.sessions.findIndex((session) => session.id === sessionId);
+  if (index === -1) return null;
+
+  store.sessions[index] = {
+    ...store.sessions[index],
+    user: { ...store.sessions[index].user, ...updates },
+  };
+  await writeStore(store);
+  return store.sessions[index];
+}
+
 export async function purgeExpiredSessions(): Promise<void> {
   const store = await readStore();
   store.sessions = store.sessions.filter((session) => !isExpired(session));

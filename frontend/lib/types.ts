@@ -44,6 +44,7 @@ export interface Authority {
   ward: string;
   municipality: string;
   canViewAnonymousCrime: boolean;
+  imageUrl?: string;
 }
 
 export interface EmailLog {
