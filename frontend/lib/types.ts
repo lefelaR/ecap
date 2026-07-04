@@ -75,6 +75,7 @@ export interface SessionUser {
   municipality: string;
   canViewAnonymousCrime: boolean;
   email?: string;
+  imageUrl?: string;
   authSource?: 'authority' | 'cognito';
 }
 

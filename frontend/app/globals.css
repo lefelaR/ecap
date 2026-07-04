@@ -299,13 +299,52 @@ h6 {
   padding: 0 0.75rem 1rem;
 }
 
-.admin-nav__profile-name {
-  color: var(--ecap-charcoal-dark);
-  font-weight: 600;
-  margin: 0 0 0.25rem;
+.user-avatar {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.admin-nav__profile-meta {
+.user-avatar--initial {
+  background: var(--ecap-gold-muted);
+  color: var(--ecap-charcoal-dark);
+}
+
+.user-avatar__image {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.user-avatar__initial {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dashboard-profile {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.dashboard-profile__avatar {
+  margin-bottom: 0.125rem;
+}
+
+.dashboard-profile__name {
+  color: var(--ecap-charcoal-dark);
+  font-weight: 600;
+  margin: 0;
+}
+
+.dashboard-profile__meta {
   color: var(--ecap-text-muted);
   font-size: 0.8125rem;
   line-height: 1.4;

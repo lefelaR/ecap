@@ -171,6 +171,7 @@ export class CognitoService {
       email.split('@')[0] ||
       'User';
     const sub = typeof payload.sub === 'string' ? payload.sub : '';
+    const imageUrl = typeof payload.picture === 'string' ? payload.picture : undefined;
 
     return {
       authorityId: sub,
@@ -180,6 +181,7 @@ export class CognitoService {
       municipality: '',
       canViewAnonymousCrime: false,
       email,
+      imageUrl,
       authSource: 'cognito',
     };
   }
