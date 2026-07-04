@@ -12,7 +12,9 @@ function getTransporter(): nodemailer.Transporter {
       host: smtp.host,
       port: smtp.port,
       secure: smtp.secure,
-      ignoreTLS: !smtp.secure,
+      auth: smtp.auth,
+      ignoreTLS: smtp.useMailpit && !smtp.secure,
+      requireTLS: !smtp.secure && !smtp.useMailpit,
     });
   }
   return transporter;

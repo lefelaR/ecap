@@ -3,19 +3,21 @@ import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 export const ECAP_MAIL_FROM = process.env.SMTP_FROM ?? 'ECAP <noreply@ecap.local>';
 export const MAILPIT_WEB_URL = process.env.MAILPIT_WEB_URL ?? 'http://localhost:8025';
 
-export function useMailpit(): boolean {
-  if (process.env.AWS_LAMBDA_FUNCTION_NAME) return false;
-  if (process.env.USE_MAILPIT === 'false') return false;
-  if (process.env.USE_MAILPIT === 'true') return true;
-  return process.env.NODE_ENV === 'development';
-}
-
 export function isSesSmtpConfigured(): boolean {
   return Boolean(
     process.env.SMTP_HOST?.trim() &&
       process.env.SMTP_USER?.trim() &&
       process.env.SMTP_PASS?.trim(),
   );
+}
+
+export function useMailpit(): boolean {
+  if (process.env.AWS_LAMBDA_FUNCTION_NAME) return false;
+  if (process.env.USE_LIVE_EMAIL === 'true') return false;
+  if (process.env.USE_MAILPIT === 'true') return true;
+  if (process.env.USE_MAILPIT === 'false') return false;
+  if (isSesSmtpConfigured()) return false;
+  return process.env.NODE_ENV === 'development';
 }
 
 export function shouldDeliverMail(): boolean {

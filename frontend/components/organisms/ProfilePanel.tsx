@@ -45,10 +45,17 @@ export function ProfilePanel() {
   }
 
   return (
-    <>
-      {error && <AlertMessage message={error} className="mb-3" />}
-      {message && <AlertMessage message={message} variant="info" className="mb-3" />}
-      <ProfileForm key={`${session.name}-${session.imageUrl ?? ''}`} session={session} saving={saving} onSubmit={handleSubmit} />
-    </>
+    <div className="row g-4">
+      <div className="col-12 col-md-6 col-lg-3">
+        {error && <AlertMessage message={error} className="mb-3" />}
+        {message && <AlertMessage message={message} variant="info" className="mb-3" />}
+        <ProfileForm
+          key={`${session.name}-${session.imageUrl ?? ''}`}
+          session={session}
+          saving={saving}
+          onSubmit={handleSubmit}
+        />
+      </div>
+    </div>
   );
 }

@@ -29,34 +29,34 @@ export function ProfileForm({ session, saving, onSubmit }: ProfileFormProps) {
   }
 
   return (
-    <form className="card shadow-sm" onSubmit={handleSubmit}>
+    <form className="card shadow-sm profile-form" onSubmit={handleSubmit}>
       <div className="card-body">
-        <div className="d-flex flex-column align-items-center mb-4">
+        <div className="d-flex flex-column align-items-center mb-3">
           <UserAvatar
             name={session.name}
             imageUrl={previewUrl ?? session.imageUrl}
             size={96}
             className="mb-3"
           />
-          <FormField label="Profile photo" htmlFor="profile-photo" className="col-12 col-md-8">
+          <FormField label="Profile photo" htmlFor="profile-photo" className="col-12">
             <input
               id="profile-photo"
               name="photo"
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
-              className="form-control"
+              className="form-control form-control-sm"
               onChange={handlePhotoChange}
             />
             <div className="form-text">JPEG, PNG, WebP, or GIF. Max 2 MB.</div>
           </FormField>
         </div>
 
-        <FormField label="Display name" htmlFor="profile-name" className="col-12 col-md-8">
+        <FormField label="Display name" htmlFor="profile-name" className="col-12">
           <input
             id="profile-name"
             name="name"
             type="text"
-            className="form-control"
+            className="form-control form-control-sm"
             defaultValue={session.name}
             required
             minLength={1}
@@ -64,7 +64,7 @@ export function ProfileForm({ session, saving, onSubmit }: ProfileFormProps) {
           />
         </FormField>
 
-        <button type="submit" className="btn btn-primary mt-3" disabled={saving}>
+        <button type="submit" className="btn btn-primary btn-sm w-100 mt-3" disabled={saving}>
           {saving ? 'Saving…' : 'Save profile'}
         </button>
       </div>

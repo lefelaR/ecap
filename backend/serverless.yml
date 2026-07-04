@@ -17,6 +17,8 @@ custom:
       corsAllowedOrigins:
         - http://localhost:3000
         - http://127.0.0.1:3000
+        - http://localhost:3001
+        - http://127.0.0.1:3001
       esbuildMinify: false
     prod:
       # API Gateway rejects allowCredentials with origin '*'. Set before prod deploy:
@@ -59,6 +61,7 @@ provider:
     SESSION_COOKIE_NAME: ecap_session
     SESSION_TTL_HOURS: '8'
     USE_MAILPIT: ${env:USE_MAILPIT, 'false'}
+    USE_LIVE_EMAIL: ${env:USE_LIVE_EMAIL, 'false'}
     SMTP_HOST: ${env:SMTP_HOST, ''}
     SMTP_PORT: ${env:SMTP_PORT, '587'}
     SMTP_SECURE: ${env:SMTP_SECURE, 'false'}
