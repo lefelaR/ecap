@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { STATUS_LABELS } from '@/lib/labels';
+import { useCallback, useEffect, useState } from 'react';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@/lib/labels';
 import type { Report } from '@/lib/types';
 import { dashboardApi } from '@/services/dashboard/client';
 import { LoadingSpinner } from '@/lib/react-spinners';
 import { AlertMessage } from '@/components/atoms/AlertMessage';
 import { IssuesTable } from '@/components/molecules/IssuesTable';
+import { PaginatedDataTable } from '@/components/molecules/PaginatedDataTable';
 
 interface ReportedIssuesSectionProps {
   isAuthorityUser: boolean;
@@ -30,6 +31,19 @@ export function ReportedIssuesSection({ isAuthorityUser, embedded = false }: Rep
       .finally(() => setLoading(false));
   }, [statusFilter]);
 
+  const getSearchableText = useCallback(
+    (report: Report) =>
+      [
+        report.referenceNumber,
+        report.summary,
+        report.ward,
+        CATEGORY_LABELS[report.category],
+        STATUS_LABELS[report.status],
+        report.anonymous ? 'anonymous' : '',
+      ].join(' '),
+    [],
+  );
+
   return (
     <section className={embedded ? undefined : 'card shadow-sm mt-4'}>
       <div className={embedded ? undefined : 'card-body'}>
@@ -44,21 +58,6 @@ export function ReportedIssuesSection({ isAuthorityUser, embedded = false }: Rep
               </p>
             </div>
           )}
-          <div className={embedded ? 'ms-md-auto' : undefined} style={{ minWidth: 200 }}>
-            <select
-              className="form-select form-select-sm"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              aria-label="Filter by status"
-            >
-              <option value="">All statuses</option>
-              {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {error && <AlertMessage message={error} className="mb-3" />}
@@ -76,8 +75,33 @@ export function ReportedIssuesSection({ isAuthorityUser, embedded = false }: Rep
           />
         ) : (
           <div className={embedded ? 'card shadow-sm' : undefined}>
-            <div className={embedded ? 'card-body p-0 px-3' : undefined}>
-              <IssuesTable reports={reports} />
+            <div className={embedded ? 'card-body p-0 px-3 pb-3' : undefined}>
+              <PaginatedDataTable
+                rows={reports}
+                getSearchableText={getSearchableText}
+                searchId="reported-issues-search"
+                searchPlaceholder="Search by reference, summary, ward, or category…"
+                noResultsMessage="No issues match your search."
+                toolbarExtra={
+                  <div className="table-toolbar__filters ms-md-auto" style={{ minWidth: 200 }}>
+                    <select
+                      className="form-select form-select-sm"
+                      value={statusFilter}
+                      onChange={(event) => setStatusFilter(event.target.value)}
+                      aria-label="Filter by status"
+                    >
+                      <option value="">All statuses</option>
+                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                }
+              >
+                {(paginatedReports) => <IssuesTable reports={paginatedReports} />}
+              </PaginatedDataTable>
             </div>
           </div>
         )}
