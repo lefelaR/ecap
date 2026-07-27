@@ -225,6 +225,12 @@ h6 {
   overflow: hidden;
 }
 
+.street-suggestions {
+  z-index: 20;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
 .ecap-spinner {
   text-align: center;
 }
