@@ -49,7 +49,12 @@ export class ReportService {
 
     const report = ServiceReport.create(input, referenceNumber);
     await this.reportRepository.save(report);
-    await this.mailService.sendReportSubmitted(report);
+
+    try {
+      await this.mailService.sendReportSubmitted(report);
+    } catch (error) {
+      console.error('Failed to send report submission emails:', error);
+    }
 
     return report;
   }
@@ -101,7 +106,11 @@ export class ReportService {
     await this.reportRepository.save(updated);
 
     if (input.status && updated.statusChangedFrom(existing)) {
-      await this.mailService.sendStatusUpdate(updated);
+      try {
+        await this.mailService.sendStatusUpdate(updated);
+      } catch (error) {
+        console.error('Failed to send status update email:', error);
+      }
     }
 
     return updated;
