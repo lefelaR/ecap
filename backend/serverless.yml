@@ -19,12 +19,17 @@ custom:
         - http://127.0.0.1:3000
         - http://localhost:3001
         - http://127.0.0.1:3001
+        # Live Vercel currently points at this API; Origin must match exactly (no trailing slash).
+        - https://www.ecapsystems.co.za
+        - https://ecapsystems.co.za
       esbuildMinify: false
     prod:
-      # API Gateway rejects allowCredentials with origin '*'. Set before prod deploy:
-      #   export PROD_CORS_ORIGIN=https://your-production-frontend.example.com
+      # Origin must match the browser Origin header exactly (no trailing slash).
+      # Override with PROD_CORS_ORIGIN if the live site host changes.
+      # API Gateway rejects allowCredentials with origin '*'.
       corsAllowedOrigins:
-        - ${env:PROD_CORS_ORIGIN, 'https://example.com'}
+        - ${env:PROD_CORS_ORIGIN, 'https://www.ecapsystems.co.za'}
+        - https://ecapsystems.co.za
       esbuildMinify: true
   corsAllowedOrigins: ${self:custom.stages.${self:provider.stage}.corsAllowedOrigins}
   esbuild:
