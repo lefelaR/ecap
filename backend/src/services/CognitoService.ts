@@ -7,6 +7,7 @@ import {
   InitiateAuthCommand,
   ResendConfirmationCodeCommand,
   SignUpCommand,
+  UpdateUserAttributesCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { Environment } from '../config/environment';
@@ -163,6 +164,59 @@ export class CognitoService {
     }
   }
 
+  async getAccessToken(refreshToken: string): Promise<string> {
+    try {
+      const response = await this.client.send(
+        new InitiateAuthCommand({
+          ClientId: Environment.cognitoClientId,
+          AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
+          AuthParameters: {
+            REFRESH_TOKEN: refreshToken,
+          },
+        }),
+      );
+
+      const accessToken = response.AuthenticationResult?.AccessToken;
+      if (!accessToken) {
+        throw new Error('Session expired.');
+      }
+
+      return accessToken;
+    } catch (error) {
+      throw new Error(mapCognitoError(error));
+    }
+  }
+
+  async updateUserAttributes(
+    accessToken: string,
+    attributes: { name?: string; picture?: string },
+  ): Promise<void> {
+    const userAttributes = [];
+
+    if (attributes.name) {
+      userAttributes.push({ Name: 'name', Value: attributes.name });
+    }
+
+    if (attributes.picture) {
+      userAttributes.push({ Name: 'picture', Value: attributes.picture });
+    }
+
+    if (userAttributes.length === 0) {
+      return;
+    }
+
+    try {
+      await this.client.send(
+        new UpdateUserAttributesCommand({
+          AccessToken: accessToken,
+          UserAttributes: userAttributes,
+        }),
+      );
+    } catch (error) {
+      throw new Error(mapCognitoError(error));
+    }
+  }
+
   private payloadToSessionUser(payload: Record<string, unknown>): SessionUser {
     const email = typeof payload.email === 'string' ? payload.email : '';
     const name =
@@ -171,6 +225,7 @@ export class CognitoService {
       email.split('@')[0] ||
       'User';
     const sub = typeof payload.sub === 'string' ? payload.sub : '';
+    const imageUrl = typeof payload.picture === 'string' ? payload.picture : undefined;
 
     return {
       authorityId: sub,
@@ -180,6 +235,7 @@ export class CognitoService {
       municipality: '',
       canViewAnonymousCrime: false,
       email,
+      imageUrl,
       authSource: 'cognito',
     };
   }

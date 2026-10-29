@@ -5,6 +5,7 @@ import { SYSTEM_DASHBOARD_PATH } from '@/lib/post-login-redirect';
 import { useSession } from '@/components/organisms/SessionProvider';
 import { AdminNavLink } from '@/components/molecules/AdminNavLink';
 import { AdminNavSection } from '@/components/molecules/AdminNavSection';
+import { DashboardProfile } from '@/components/molecules/DashboardProfile';
 import {
   ADMIN_NAV_SECTION_LABELS,
   type AdminNavSectionId,
@@ -33,11 +34,7 @@ export function AdminSideNav() {
       </Link>
 
       <div className="admin-nav__profile">
-        <p className="admin-nav__profile-name">{session.name}</p>
-        <p className="admin-nav__profile-meta">
-          {session.authSource === 'cognito' ? 'Citizen account' : session.type}
-          {session.ward && session.ward !== 'All' ? ` · ${session.ward}` : ''}
-        </p>
+        <DashboardProfile session={session} />
       </div>
 
       {SECTION_ORDER.map((sectionId) => {

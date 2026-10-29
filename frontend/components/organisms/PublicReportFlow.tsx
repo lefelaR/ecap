@@ -11,6 +11,7 @@ import { FormField } from '../atoms/FormField';
 import { PageBanner } from '../atoms/PageBanner';
 import { ReportTypeToggle } from '../atoms/ReportTypeToggle';
 import { ReportSuccessCard } from '../molecules/ReportSuccessCard';
+import { StreetAddressInput } from '../molecules/StreetAddressInput';
 
 const LocationPicker = dynamic(
   () => import('../molecules/LocationPicker').then((mod) => mod.LocationPicker),
@@ -32,6 +33,7 @@ export function PublicReportFlow() {
   const [category, setCategory] = useState<ReportCategory>('road-engineer');
   const [anonymous, setAnonymous] = useState(false);
   const [coords, setCoords] = useState({ lat: -26.2041, lng: 28.0473 });
+  const [address, setAddress] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ referenceNumber: string } | null>(null);
   const [error, setError] = useState('');
@@ -72,6 +74,7 @@ export function PublicReportFlow() {
       const report = await createReport(formData);
       setResult({ referenceNumber: report.referenceNumber });
       form.reset();
+      setAddress('');
     } catch (err) {
       setError(getReportErrorMessage(err, 'Failed to submit report.'));
     } finally {
@@ -166,9 +169,13 @@ export function PublicReportFlow() {
                   </select>
                 </FormField>
 
-                <FormField label="Street name or area" htmlFor="address">
-                  <input id="address" name="address" className="form-control" placeholder="e.g. Example St, Wynberg" required />
-                </FormField>
+                <StreetAddressInput
+                  value={address}
+                  onChange={setAddress}
+                  coords={coords}
+                  onCoordsChange={setCoords}
+                  required
+                />
 
                 <FormField label="Summarise the problem" htmlFor="summary">
                   <input id="summary" name="summary" className="form-control" placeholder="e.g. 10 inch pothole near post box" required />

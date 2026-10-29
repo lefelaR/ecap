@@ -1,11 +1,11 @@
 import { cookies } from 'next/headers';
 import type { SessionUser } from '@/lib/types';
+import { SESSION_COOKIE, SESSION_TTL_HOURS } from '@/lib/session-cookie';
+import { isApiConfigured } from '@/services/api-config';
 import { getAuthorityById } from './store';
 import { createSession, deleteSession, getSessionById, purgeExpiredSessions } from './session-store';
-import { isApiConfigured } from './lambda-api';
 
-export const SESSION_COOKIE = 'ecap_session';
-export const SESSION_TTL_HOURS = 8;
+export { SESSION_COOKIE, SESSION_TTL_HOURS } from '@/lib/session-cookie';
 
 export const sessionCookieOptions = {
   httpOnly: true,
@@ -15,9 +15,9 @@ export const sessionCookieOptions = {
   secure: process.env.NODE_ENV === 'production',
 };
 
-export async function establishSession(user: SessionUser): Promise<string> {
+export async function establishSession(user: SessionUser, cognitoIdToken?: string): Promise<string> {
   await purgeExpiredSessions();
-  const record = await createSession(user, SESSION_TTL_HOURS);
+  const record = await createSession(user, SESSION_TTL_HOURS, cognitoIdToken);
   return record.id;
 }
 
@@ -44,6 +44,7 @@ async function resolveLocalSession(): Promise<SessionUser | null> {
       ward: legacyAuthority.ward,
       municipality: legacyAuthority.municipality,
       canViewAnonymousCrime: legacyAuthority.canViewAnonymousCrime,
+      imageUrl: legacyAuthority.imageUrl,
       authSource: 'authority',
     };
   }
@@ -84,8 +85,15 @@ export async function getSession(): Promise<SessionUser | null> {
   return null;
 }
 
-export function canAccessReport(session: SessionUser, report: { type: string; ward: string; anonymous: boolean }): boolean {
+export function canAccessReport(
+  session: SessionUser,
+  report: { type: string; ward: string; anonymous: boolean; contactEmail?: string },
+): boolean {
   if (session.type === 'Application Admin') return true;
+
+  if (session.authSource === 'cognito' && session.email && report.contactEmail) {
+    return report.contactEmail.toLowerCase() === session.email.toLowerCase();
+  }
 
   if (report.type === 'crime') {
     if (report.anonymous) return session.canViewAnonymousCrime;

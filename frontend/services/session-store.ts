@@ -12,6 +12,7 @@ export interface SessionRecord {
   user: SessionUser;
   createdAt: string;
   expiresAt: string;
+  cognitoIdToken?: string;
 }
 
 interface SessionStore {
@@ -43,7 +44,11 @@ function isExpired(record: SessionRecord): boolean {
   return new Date(record.expiresAt).getTime() <= Date.now();
 }
 
-export async function createSession(user: SessionUser, ttlHours = DEFAULT_TTL_HOURS): Promise<SessionRecord> {
+export async function createSession(
+  user: SessionUser,
+  ttlHours = DEFAULT_TTL_HOURS,
+  cognitoIdToken?: string,
+): Promise<SessionRecord> {
   const store = await readStore();
   const now = new Date();
   const record: SessionRecord = {
@@ -51,6 +56,7 @@ export async function createSession(user: SessionUser, ttlHours = DEFAULT_TTL_HO
     user,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + ttlHours * 60 * 60 * 1000).toISOString(),
+    ...(cognitoIdToken ? { cognitoIdToken } : {}),
   };
 
   store.sessions = [record, ...store.sessions.filter((session) => session.user.authorityId !== user.authorityId)];
@@ -75,6 +81,22 @@ export async function deleteSession(sessionId: string): Promise<void> {
   const store = await readStore();
   store.sessions = store.sessions.filter((session) => session.id !== sessionId);
   await writeStore(store);
+}
+
+export async function updateSessionUser(
+  sessionId: string,
+  updates: Partial<SessionUser>,
+): Promise<SessionRecord | null> {
+  const store = await readStore();
+  const index = store.sessions.findIndex((session) => session.id === sessionId);
+  if (index === -1) return null;
+
+  store.sessions[index] = {
+    ...store.sessions[index],
+    user: { ...store.sessions[index].user, ...updates },
+  };
+  await writeStore(store);
+  return store.sessions[index];
 }
 
 export async function purgeExpiredSessions(): Promise<void> {

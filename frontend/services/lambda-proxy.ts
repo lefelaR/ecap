@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getApiUrl } from './lambda-api';
+import { getApiUrl } from '@/services/api-config';
 
 export function forwardUpstreamCookies(response: NextResponse, upstream: Response): void {
   const setCookies =

@@ -14,6 +14,11 @@ export const dashboardApi = {
     return parseJson<{ user: SessionUser }>(response);
   },
 
+  async getReport(id: string) {
+    const response = await fetch(`/api/Dashboard/reports/${id}`, { credentials: 'include' });
+    return parseJson<Report>(response);
+  },
+
   async getReports(filters: { ward?: string; status?: string } = {}) {
     const params = new URLSearchParams();
     if (filters.ward) params.set('ward', filters.ward);

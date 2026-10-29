@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { destroySession, SESSION_COOKIE, sessionCookieOptions } from '@/services/auth';
-import { isApiConfigured } from '@/services/lambda-api';
+import { isApiConfigured } from '@/services/api-config';
 import { proxyToLambda } from '@/services/lambda-proxy';
 
 export async function POST(request: Request) {

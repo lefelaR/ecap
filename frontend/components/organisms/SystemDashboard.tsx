@@ -12,6 +12,7 @@ import { dashboardApi } from '@/services/dashboard/client';
 import { ActionCard } from '@/components/atoms/ActionCard';
 import { AlertMessage } from '@/components/atoms/AlertMessage';
 import { DashboardSummaryBar } from '@/components/molecules/DashboardSummaryBar';
+import { ReportedIssuesSection } from '@/components/organisms/ReportedIssuesSection';
 import { useSession } from '@/components/organisms/SessionProvider';
 
 export function SystemDashboard() {
@@ -111,6 +112,7 @@ export function SystemDashboard() {
         </section>
       )}
 
+      <ReportedIssuesSection isAuthorityUser={isAuthorityUser} />
     </>
   );
 }
