@@ -8,6 +8,7 @@ import {
 import type { SessionUser } from '@/lib/types';
 import { SESSION_COOKIE, SESSION_TTL_HOURS } from '@/lib/session-cookie';
 import { isApiConfigured } from '@/services/api-config';
+import { verifyCognitoIdToken } from '@/services/cognito-session';
 import { getAuthorityById } from './store';
 import { createSession, deleteSession, getSessionById, purgeExpiredSessions } from './session-store';
 
@@ -31,6 +32,11 @@ export function setCognitoSessionCookies(
     ...sessionCookieOptions,
     maxAge: COGNITO_REFRESH_TTL_SECONDS,
   });
+}
+
+export function clearCognitoSessionCookies(response: NextResponse): void {
+  response.cookies.set(COGNITO_ID_TOKEN_COOKIE, '', { ...sessionCookieOptions, maxAge: 0 });
+  response.cookies.set(COGNITO_REFRESH_TOKEN_COOKIE, '', { ...sessionCookieOptions, maxAge: 0 });
 }
 
 export async function establishSession(user: SessionUser, cognitoIdToken?: string): Promise<string> {
@@ -78,6 +84,17 @@ async function resolveLocalSession(): Promise<SessionUser | null> {
   return null;
 }
 
+async function resolveCognitoCookieSession(): Promise<SessionUser | null> {
+  const idToken = cookies().get(COGNITO_ID_TOKEN_COOKIE)?.value;
+  if (!idToken) return null;
+
+  try {
+    return await verifyCognitoIdToken(idToken);
+  } catch {
+    return null;
+  }
+}
+
 async function resolveRemoteSession(): Promise<SessionUser | null> {
   const cookieHeader = cookies()
     .getAll()
@@ -102,6 +119,11 @@ export async function getSession(): Promise<SessionUser | null> {
   const localSession = await resolveLocalSession();
   if (localSession) {
     return localSession;
+  }
+
+  const cognitoSession = await resolveCognitoCookieSession();
+  if (cognitoSession) {
+    return cognitoSession;
   }
 
   if (isApiConfigured()) {
