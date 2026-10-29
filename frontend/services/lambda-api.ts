@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { COGNITO_ID_TOKEN_COOKIE } from '@/lib/cognito-cookies';
 import { SESSION_COOKIE } from '@/lib/session-cookie';
 import { getSessionById } from '@/services/session-store';
 import { getApiUrl } from './api-config';
@@ -15,10 +16,14 @@ export async function buildCookieHeader(): Promise<string> {
     parts.push(`${SESSION_COOKIE}=${sessionId}`);
   }
 
-  if (!parts.some((part) => part.startsWith('cognito_id_token='))) {
-    const record = sessionId ? await getSessionById(sessionId) : null;
-    if (record?.cognitoIdToken) {
-      parts.push(`cognito_id_token=${record.cognitoIdToken}`);
+  if (!parts.some((part) => part.startsWith(`${COGNITO_ID_TOKEN_COOKIE}=`))) {
+    try {
+      const record = sessionId ? await getSessionById(sessionId) : null;
+      if (record?.cognitoIdToken) {
+        parts.push(`${COGNITO_ID_TOKEN_COOKIE}=${record.cognitoIdToken}`);
+      }
+    } catch {
+      // Filesystem session store is unavailable on read-only hosts (e.g. Vercel).
     }
   }
 
