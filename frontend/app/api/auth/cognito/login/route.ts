@@ -4,6 +4,7 @@ import { cognitoConfig, isCognitoConfigured } from '@/lib/cognito';
 import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
 import { cognitoPayloadToSessionUser } from '@/services/cognito-session';
 import { getApiUrl, isApiConfigured } from '@/services/api-config';
+import { forwardUpstreamCookies } from '@/services/lambda-proxy';
 
 export async function POST(request: Request) {
   if (!isCognitoConfigured()) {
@@ -11,34 +12,38 @@ export async function POST(request: Request) {
   }
 
   if (isApiConfigured()) {
-    const upstream = await fetch(`${getApiUrl()}/auth/cognito/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(request.headers.get('cookie') ? { cookie: request.headers.get('cookie')! } : {}),
-      },
-      body: await request.text(),
-      cache: 'no-store',
-    });
+    // On Vercel the filesystem session store is not writable. Rely on Lambda
+    // Cognito cookies (forwarded below) and resolveSession via /auth/session.
+    try {
+      const upstream = await fetch(`${getApiUrl()}/auth/cognito/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(request.headers.get('cookie') ? { cookie: request.headers.get('cookie')! } : {}),
+        },
+        body: await request.text(),
+        cache: 'no-store',
+      });
 
-    const data = (await upstream.json()) as {
-      error?: string;
-      user?: ReturnType<typeof cognitoPayloadToSessionUser>;
-      idToken?: string;
-    };
+      const data = (await upstream.json()) as {
+        error?: string;
+        user?: ReturnType<typeof cognitoPayloadToSessionUser>;
+      };
 
-    if (!upstream.ok) {
-      return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
+      if (!upstream.ok) {
+        return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
+      }
+
+      if (!data.user) {
+        return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
+      }
+
+      const response = NextResponse.json({ user: data.user });
+      forwardUpstreamCookies(response, upstream);
+      return response;
+    } catch {
+      return NextResponse.json({ error: 'Sign in failed.' }, { status: 500 });
     }
-
-    if (!data.user || !data.idToken) {
-      return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
-    }
-
-    const sessionId = await establishSession(data.user, data.idToken);
-    const response = NextResponse.json({ user: data.user });
-    response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions);
-    return response;
   }
 
   const body = (await request.json()) as {

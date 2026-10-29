@@ -23,8 +23,12 @@ export async function establishSession(user: SessionUser, cognitoIdToken?: strin
 
 export async function destroySession(): Promise<void> {
   const sessionId = cookies().get(SESSION_COOKIE)?.value;
-  if (sessionId) {
+  if (!sessionId) return;
+
+  try {
     await deleteSession(sessionId);
+  } catch {
+    // Filesystem session store is unavailable on read-only hosts (e.g. Vercel).
   }
 }
 
