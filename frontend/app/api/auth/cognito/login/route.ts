@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { cognitoConfig, isCognitoConfigured } from '@/lib/cognito';
-import { establishSession, sessionCookieOptions, SESSION_COOKIE } from '@/services/auth';
+import {
+  establishSession,
+  sessionCookieOptions,
+  setCognitoSessionCookies,
+  SESSION_COOKIE,
+} from '@/services/auth';
 import { cognitoPayloadToSessionUser } from '@/services/cognito-session';
 import { getApiUrl, isApiConfigured } from '@/services/api-config';
-import { forwardUpstreamCookies } from '@/services/lambda-proxy';
 
 export async function POST(request: Request) {
   if (!isCognitoConfigured()) {
@@ -12,8 +16,8 @@ export async function POST(request: Request) {
   }
 
   if (isApiConfigured()) {
-    // On Vercel the filesystem session store is not writable. Rely on Lambda
-    // Cognito cookies (forwarded below) and resolveSession via /auth/session.
+    // Do not use the filesystem session store on Vercel. Set Cognito cookies from
+    // the Lambda JSON body — Node fetch often does not expose API Gateway Set-Cookie.
     try {
       const upstream = await fetch(`${getApiUrl()}/auth/cognito/login`, {
         method: 'POST',
@@ -28,18 +32,23 @@ export async function POST(request: Request) {
       const data = (await upstream.json()) as {
         error?: string;
         user?: ReturnType<typeof cognitoPayloadToSessionUser>;
+        idToken?: string;
+        refreshToken?: string;
       };
 
       if (!upstream.ok) {
         return NextResponse.json({ error: data.error ?? 'Sign in failed.' }, { status: upstream.status });
       }
 
-      if (!data.user) {
+      if (!data.user || !data.idToken || !data.refreshToken) {
         return NextResponse.json({ error: 'Invalid Cognito session.' }, { status: 502 });
       }
 
       const response = NextResponse.json({ user: data.user });
-      forwardUpstreamCookies(response, upstream);
+      setCognitoSessionCookies(response, {
+        idToken: data.idToken,
+        refreshToken: data.refreshToken,
+      });
       return response;
     } catch {
       return NextResponse.json({ error: 'Sign in failed.' }, { status: 500 });

@@ -14,13 +14,19 @@ export class RequestContext {
   }
 
   getCookie(name: string): string | null {
+    // HTTP API payload 2.0 often puts cookies only in event.cookies, not headers.
+    const fromEvent = this.event.cookies?.find((part) => part.trim().startsWith(`${name}=`));
+    if (fromEvent) {
+      return fromEvent.split('=').slice(1).join('=').trim() || null;
+    }
+
     const cookieHeader = this.event.headers.cookie ?? this.event.headers.Cookie;
     if (!cookieHeader) return null;
 
     const match = cookieHeader.split(';').find((part) => part.trim().startsWith(`${name}=`));
     if (!match) return null;
 
-    return match.split('=').slice(1).join('=').trim() ?? null;
+    return match.split('=').slice(1).join('=').trim() || null;
   }
 
   get sessionId(): string | null {

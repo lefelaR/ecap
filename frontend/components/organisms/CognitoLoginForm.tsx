@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { isCognitoConfigured } from '@/lib/cognito';
 import {
   AUTH_FORM_CLASS,
@@ -17,12 +17,9 @@ import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
 import { PasswordInput } from '../molecules/PasswordInput';
-import { useSession } from './SessionProvider';
 
 export function CognitoLoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshSession } = useSession();
 
   const form = useAuthForm({
     initialValues: loginInitialValues,
@@ -30,12 +27,11 @@ export function CognitoLoginForm() {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         await appApi.cognitoSignIn(values.email, values.password);
-        await refreshSession();
         success('Signed in successfully.');
-        router.push(getPostLoginRedirect(searchParams.get('redirect')));
+        // Full navigation so the new Cognito cookies are present for session bootstrap.
+        window.location.assign(getPostLoginRedirect(searchParams.get('redirect')));
       } catch (err) {
         fromError(err, 'Sign in failed.');
-      } finally {
         setSubmitting(false);
       }
     },
