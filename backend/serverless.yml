@@ -2,6 +2,8 @@ service: ecap-api
 
 frameworkVersion: '3'
 
+useDotenv: true
+
 plugins:
   - serverless-esbuild
   - serverless-offline
@@ -15,12 +17,19 @@ custom:
       corsAllowedOrigins:
         - http://localhost:3000
         - http://127.0.0.1:3000
+        - http://localhost:3001
+        - http://127.0.0.1:3001
+        # Live Vercel currently points at this API; Origin must match exactly (no trailing slash).
+        - https://www.ecapsystems.co.za
+        - https://ecapsystems.co.za
       esbuildMinify: false
     prod:
-      # API Gateway rejects allowCredentials with origin '*'. Set before prod deploy:
-      #   export PROD_CORS_ORIGIN=https://your-production-frontend.example.com
+      # Origin must match the browser Origin header exactly (no trailing slash).
+      # Override with PROD_CORS_ORIGIN if the live site host changes.
+      # API Gateway rejects allowCredentials with origin '*'.
       corsAllowedOrigins:
-        - ${env:PROD_CORS_ORIGIN, 'https://example.com'}
+        - ${env:PROD_CORS_ORIGIN, 'https://www.ecapsystems.co.za'}
+        - https://ecapsystems.co.za
       esbuildMinify: true
   corsAllowedOrigins: ${self:custom.stages.${self:provider.stage}.corsAllowedOrigins}
   esbuild:
@@ -30,6 +39,8 @@ custom:
     target: node20
     platform: node
     concurrency: 10
+    loader:
+      .tsx: tsx
     exclude:
       - '@aws-sdk/client-dynamodb'
       - '@aws-sdk/lib-dynamodb'
@@ -54,6 +65,20 @@ provider:
     COGNITO_CLIENT_ID: !Ref EcapUserPoolClient
     SESSION_COOKIE_NAME: ecap_session
     SESSION_TTL_HOURS: '8'
+    USE_MAILPIT: ${env:USE_MAILPIT, 'false'}
+    USE_LIVE_EMAIL: ${env:USE_LIVE_EMAIL, 'false'}
+    SMTP_HOST: ${env:SMTP_HOST, ''}
+    SMTP_PORT: ${env:SMTP_PORT, '587'}
+    SMTP_SECURE: ${env:SMTP_SECURE, 'false'}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASS: ${env:SMTP_PASS, ''}
+    SMTP_FROM: ${env:SMTP_FROM, 'ECAP <noreply@ecap.local>'}
+    ECAP_ADMIN_EMAIL: ${env:ECAP_ADMIN_EMAIL, 'rakgew@gmail.com'}
+    ECAP_ROADS_EMAIL: ${env:ECAP_ROADS_EMAIL, 'roads@ecap.local'}
+    ECAP_WATER_EMAIL: ${env:ECAP_WATER_EMAIL, 'water@ecap.local'}
+    ECAP_WASTE_EMAIL: ${env:ECAP_WASTE_EMAIL, 'waste@ecap.local'}
+    ECAP_JMPD_EMAIL: ${env:ECAP_JMPD_EMAIL, 'jmpd@ecap.local'}
+    APP_URL: ${env:APP_URL, 'http://localhost:3000'}
   iam:
     role:
       statements:
@@ -169,6 +194,13 @@ functions:
           path: /auth/session
           method: get
 
+  updateProfile:
+    handler: src/handlers/auth/updateProfile.handler
+    events:
+      - httpApi:
+          path: /auth/profile
+          method: patch
+
   cognitoLogin:
     handler: src/handlers/auth/cognitoLogin.handler
     events:
@@ -221,4 +253,3 @@ functions:
 resources:
   - ${file(./cloudformation/dynamodb-tables.yml)}
   - ${file(./cloudformation/cognito-user-pool.yml)}
-  - ${file(./cloudformation/api-outputs.yml)}

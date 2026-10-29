@@ -28,6 +28,7 @@ export function cognitoPayloadToSessionUser(payload: Record<string, unknown>): S
     email.split('@')[0] ||
     'User';
   const sub = typeof payload.sub === 'string' ? payload.sub : '';
+  const imageUrl = typeof payload.picture === 'string' ? payload.picture : undefined;
 
   return {
     authorityId: sub,
@@ -37,6 +38,7 @@ export function cognitoPayloadToSessionUser(payload: Record<string, unknown>): S
     municipality: '',
     canViewAnonymousCrime: false,
     email,
+    imageUrl,
     authSource: 'cognito',
   };
 }

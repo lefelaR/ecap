@@ -18,9 +18,7 @@ export class EmailNotificationRepository extends BaseRepository<EmailNotificatio
   }
 
   async save(notification: EmailNotification): Promise<EmailNotification> {
-    const record = notification.toJSON();
-    await this.put(record);
-    console.info(`[ECAP email] To: ${record.to} | ${record.subject}`);
+    await this.put(notification.toJSON());
     return notification;
   }
 }

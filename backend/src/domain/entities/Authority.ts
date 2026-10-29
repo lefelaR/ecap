@@ -42,7 +42,17 @@ export class Authority {
       ward: this.record.ward,
       municipality: this.record.municipality,
       canViewAnonymousCrime: this.record.canViewAnonymousCrime,
+      imageUrl: this.record.imageUrl,
+      authSource: 'authority',
     };
+  }
+
+  withProfile(updates: { name?: string; imageUrl?: string }): Authority {
+    return Authority.fromRecord({
+      ...this.record,
+      ...(updates.name ? { name: updates.name } : {}),
+      ...(updates.imageUrl !== undefined ? { imageUrl: updates.imageUrl } : {}),
+    });
   }
 
   isAdmin(): boolean {

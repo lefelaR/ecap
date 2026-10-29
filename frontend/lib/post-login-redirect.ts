@@ -1,7 +1,13 @@
 export const HOME_PATH = '/';
 export const SYSTEM_DASHBOARD_PATH = '/admin';
+export const ISSUES_PATH = '/admin/issues';
+
+export function issueDetailsPath(id: string): string {
+  return `${ISSUES_PATH}/${id}`;
+}
 export const REPORT_MANAGEMENT_PATH = '/admin/reports';
 export const ADMIN_CONTROL_PATH = '/admin/authorities';
+export const PROFILE_PATH = '/admin/profile';
 
 /** @deprecated Use SYSTEM_DASHBOARD_PATH */
 export const REPORT_DASHBOARD_PATH = SYSTEM_DASHBOARD_PATH;

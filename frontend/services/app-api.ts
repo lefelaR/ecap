@@ -50,4 +50,13 @@ export const appApi = {
     });
     return parseJson<{ ok: boolean }>(response);
   },
+
+  async updateProfile(formData: FormData) {
+    const response = await fetch('/api/auth/profile', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    return parseJson<{ user: import('../lib/types').SessionUser }>(response);
+  },
 };

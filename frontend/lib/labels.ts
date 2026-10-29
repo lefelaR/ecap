@@ -29,3 +29,18 @@ export function formatDate(iso: string): string {
     day: 'numeric',
   });
 }
+
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('en-ZA', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export const REPORT_TYPE_LABELS = {
+  service: 'Service delivery',
+  crime: 'Crime',
+} as const;

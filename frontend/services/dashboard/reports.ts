@@ -25,6 +25,21 @@ export async function listDashboardReports(
   return response.json() as Promise<Report[]>;
 }
 
+export async function getDashboardReport(id: string): Promise<Report | null> {
+  const response = await lambdaFetch(`/reports/${id}`);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const body = (await response.json()) as { error?: string };
+    throw new Error(body.error ?? 'Failed to load report.');
+  }
+
+  return response.json() as Promise<Report>;
+}
+
 export async function updateDashboardReport(
   _session: unknown,
   id: string,

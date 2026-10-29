@@ -44,6 +44,7 @@ export interface AuthorityRecord {
   ward: string;
   municipality: string;
   canViewAnonymousCrime: boolean;
+  imageUrl?: string;
 }
 
 export interface EmailNotificationRecord {
@@ -70,6 +71,7 @@ export interface SessionUser {
   municipality: string;
   canViewAnonymousCrime: boolean;
   email?: string;
+  imageUrl?: string;
   authSource?: 'authority' | 'cognito';
 }
 

@@ -2,12 +2,12 @@ import { ServiceReport } from '../domain/entities/ServiceReport';
 import type { CreateReportInput, SessionUser, UpdateReportInput } from '../domain/types';
 import { ServiceReportRepository } from '../repositories/ServiceReportRepository';
 import { ReferenceNumberGenerator } from '../utils/ReferenceNumberGenerator';
-import { EmailNotificationService } from './EmailNotificationService';
+import { MailService } from './MailService';
 
 export class ReportService {
   constructor(
     private readonly reportRepository: ServiceReportRepository,
-    private readonly emailService: EmailNotificationService,
+    private readonly mailService: MailService,
   ) {}
 
   async listReports(
@@ -49,7 +49,12 @@ export class ReportService {
 
     const report = ServiceReport.create(input, referenceNumber);
     await this.reportRepository.save(report);
-    await this.emailService.sendConfirmation(report);
+
+    try {
+      await this.mailService.sendReportSubmitted(report);
+    } catch (error) {
+      console.error('Failed to send report submission emails:', error);
+    }
 
     return report;
   }
@@ -101,7 +106,11 @@ export class ReportService {
     await this.reportRepository.save(updated);
 
     if (input.status && updated.statusChangedFrom(existing)) {
-      await this.emailService.sendStatusUpdate(updated);
+      try {
+        await this.mailService.sendStatusUpdate(updated);
+      } catch (error) {
+        console.error('Failed to send status update email:', error);
+      }
     }
 
     return updated;
