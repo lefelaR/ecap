@@ -16,6 +16,7 @@ import { appApi } from '@/services/app-api';
 import { BackHomeLink } from '../atoms/BackHomeLink';
 import { FormField } from '../atoms/FormField';
 import { AuthFormLinks } from '../molecules/AuthFormLinks';
+import { PasswordInput } from '../molecules/PasswordInput';
 import { useSession } from './SessionProvider';
 
 export function CognitoLoginForm() {
@@ -74,10 +75,9 @@ export function CognitoLoginForm() {
           htmlFor="password"
           error={getFieldError(form.errors, form.touched, 'password')}
         >
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             className={fieldClassName(Boolean(form.touched.password && form.errors.password))}
             autoComplete="current-password"
             value={form.values.password}
