@@ -1,7 +1,14 @@
 import { cookies } from 'next/headers';
+import type { NextResponse } from 'next/server';
+import {
+  COGNITO_ID_TOKEN_COOKIE,
+  COGNITO_REFRESH_TOKEN_COOKIE,
+  COGNITO_REFRESH_TTL_SECONDS,
+} from '@/lib/cognito-cookies';
 import type { SessionUser } from '@/lib/types';
 import { SESSION_COOKIE, SESSION_TTL_HOURS } from '@/lib/session-cookie';
 import { isApiConfigured } from '@/services/api-config';
+import { verifyCognitoIdToken } from '@/services/cognito-session';
 import { getAuthorityById } from './store';
 import { createSession, deleteSession, getSessionById, purgeExpiredSessions } from './session-store';
 
@@ -14,6 +21,23 @@ export const sessionCookieOptions = {
   maxAge: SESSION_TTL_HOURS * 60 * 60,
   secure: process.env.NODE_ENV === 'production',
 };
+
+/** Set Cognito auth cookies on the browser via the Next.js response (not API Gateway Set-Cookie). */
+export function setCognitoSessionCookies(
+  response: NextResponse,
+  tokens: { idToken: string; refreshToken: string },
+): void {
+  response.cookies.set(COGNITO_ID_TOKEN_COOKIE, tokens.idToken, sessionCookieOptions);
+  response.cookies.set(COGNITO_REFRESH_TOKEN_COOKIE, tokens.refreshToken, {
+    ...sessionCookieOptions,
+    maxAge: COGNITO_REFRESH_TTL_SECONDS,
+  });
+}
+
+export function clearCognitoSessionCookies(response: NextResponse): void {
+  response.cookies.set(COGNITO_ID_TOKEN_COOKIE, '', { ...sessionCookieOptions, maxAge: 0 });
+  response.cookies.set(COGNITO_REFRESH_TOKEN_COOKIE, '', { ...sessionCookieOptions, maxAge: 0 });
+}
 
 export async function establishSession(user: SessionUser, cognitoIdToken?: string): Promise<string> {
   await purgeExpiredSessions();
@@ -36,24 +60,39 @@ async function resolveLocalSession(): Promise<SessionUser | null> {
   const sessionId = cookies().get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
-  const record = await getSessionById(sessionId);
-  if (record) return record.user;
+  try {
+    const record = await getSessionById(sessionId);
+    if (record) return record.user;
 
-  const legacyAuthority = await getAuthorityById(sessionId);
-  if (legacyAuthority) {
-    return {
-      authorityId: legacyAuthority.id,
-      name: legacyAuthority.name,
-      type: legacyAuthority.type,
-      ward: legacyAuthority.ward,
-      municipality: legacyAuthority.municipality,
-      canViewAnonymousCrime: legacyAuthority.canViewAnonymousCrime,
-      imageUrl: legacyAuthority.imageUrl,
-      authSource: 'authority',
-    };
+    const legacyAuthority = await getAuthorityById(sessionId);
+    if (legacyAuthority) {
+      return {
+        authorityId: legacyAuthority.id,
+        name: legacyAuthority.name,
+        type: legacyAuthority.type,
+        ward: legacyAuthority.ward,
+        municipality: legacyAuthority.municipality,
+        canViewAnonymousCrime: legacyAuthority.canViewAnonymousCrime,
+        imageUrl: legacyAuthority.imageUrl,
+        authSource: 'authority',
+      };
+    }
+  } catch {
+    // Filesystem session store is unavailable on read-only hosts (e.g. Vercel).
   }
 
   return null;
+}
+
+async function resolveCognitoCookieSession(): Promise<SessionUser | null> {
+  const idToken = cookies().get(COGNITO_ID_TOKEN_COOKIE)?.value;
+  if (!idToken) return null;
+
+  try {
+    return await verifyCognitoIdToken(idToken);
+  } catch {
+    return null;
+  }
 }
 
 async function resolveRemoteSession(): Promise<SessionUser | null> {
@@ -80,6 +119,11 @@ export async function getSession(): Promise<SessionUser | null> {
   const localSession = await resolveLocalSession();
   if (localSession) {
     return localSession;
+  }
+
+  const cognitoSession = await resolveCognitoCookieSession();
+  if (cognitoSession) {
+    return cognitoSession;
   }
 
   if (isApiConfigured()) {
